@@ -1,7 +1,9 @@
 package com.qrh.youshangdache.payment.receiver;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.qrh.youshangdache.common.constant.MqConst;
+import com.qrh.youshangdache.common.constant.ExchangeConst;
+import com.qrh.youshangdache.common.constant.QueueConst;
+import com.qrh.youshangdache.common.constant.RoutingConst;
 import com.qrh.youshangdache.model.form.payment.ProfitsharingForm;
 import com.qrh.youshangdache.payment.service.WxPayService;
 import com.qrh.youshangdache.payment.service.WxProfitsharingService;
@@ -30,9 +32,9 @@ public class PaymentReceiver {
     private WxProfitsharingService wxProfitsharingService;
 
     @RabbitListener(bindings = @QueueBinding(
-            exchange = @Exchange(value = MqConst.EXCHANGE_ORDER),
-            value = @Queue(value = MqConst.QUEUE_PAY_SUCCESS, durable = "ture"),
-            key = {MqConst.ROUTING_PAY_SUCCESS}
+            exchange = @Exchange(value = ExchangeConst.ORDER),
+            value = @Queue(value = QueueConst.PAY_SUCCESS, durable = "ture"),
+            key = {RoutingConst.PAY_SUCCESS}
     ))
     public void paySuccess(String orderNo, Message message, Channel channel) throws IOException {
         wxPayService.handlerOrder(orderNo);
@@ -47,9 +49,9 @@ public class PaymentReceiver {
      * @throws IOException
      */
     @RabbitListener(bindings = @QueueBinding(
-            exchange = @Exchange(value = MqConst.EXCHANGE_PROFITSHARING, type = "x-delayed-message", arguments = {@Argument(name = "x-delayed-type", value = "direct")}, durable = "true", autoDelete = "false"),
-            value = @Queue(value = MqConst.QUEUE_PROFITSHARING, durable = "true"),
-            key = MqConst.ROUTING_PROFITSHARING
+            exchange = @Exchange(value = ExchangeConst.PROFITSHARING, type = "x-delayed-message", arguments = {@Argument(name = "x-delayed-type", value = "direct")}, durable = "true", autoDelete = "false"),
+            value = @Queue(value = QueueConst.PROFITSHARING, durable = "true"),
+            key = RoutingConst.PROFITSHARING
 
     ))
     public void profitsharingMessage(String param, Message message, Channel channel) throws IOException {

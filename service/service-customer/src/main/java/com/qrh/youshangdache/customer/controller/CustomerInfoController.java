@@ -49,8 +49,9 @@ public class CustomerInfoController {
 	 */
 	@Operation(summary = "更新客户微信手机号码")
 	@GetMapping("/updateWxPhoneNumber")
-	public Result<Boolean> updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
-		return Result.ok(customerInfoService.updateWxPhoneNumber(updateWxPhoneForm));
+	public Result<Void> updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
+		customerInfoService.updateWxPhoneNumber(updateWxPhoneForm);
+		return Result.ok();
 	}
 	@Operation(summary = "获取客户的openId")
 	@GetMapping("/getCustomerOpenId/{customerId}")

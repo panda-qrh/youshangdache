@@ -8,6 +8,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * 订单的账单信息
+ */
 @Data
 @Schema(description = "OrderBill")
 @TableName("order_bill")

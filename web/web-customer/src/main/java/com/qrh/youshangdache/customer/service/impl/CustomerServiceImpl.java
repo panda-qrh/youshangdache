@@ -52,8 +52,8 @@ public class CustomerServiceImpl implements CustomerService {
      * @return true绑定 | false未绑定
      */
     @Override
-    public Boolean updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm) {
-        return customerInfoFeignClient.updateWxPhoneNumber(updateWxPhoneForm).getData();
+    public void updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm) {
+        customerInfoFeignClient.updateWxPhoneNumber(updateWxPhoneForm).getData();
     }
 
     /**

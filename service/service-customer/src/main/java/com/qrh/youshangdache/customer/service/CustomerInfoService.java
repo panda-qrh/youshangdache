@@ -31,7 +31,7 @@ public interface CustomerInfoService extends IService<CustomerInfo> {
      * @param updateWxPhoneForm
      * @return true绑定 | false未绑定
      */
-    Boolean updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm);
+    void updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm);
 
     String getCustomerOpenId(Long customerId);
 }

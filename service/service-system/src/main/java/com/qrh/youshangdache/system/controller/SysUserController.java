@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.atguigu.daijia.common.annotation.Log;
-import com.atguigu.daijia.common.enums.BusinessType;
+import com.qrh.youshangdache.common.annotation.Log;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.util.MD5;
 import com.qrh.youshangdache.model.entity.system.SysUser;
@@ -48,7 +48,7 @@ public class SysUserController {
         return Result.ok(sysUser);
     }
 
-    @Log(title = "用户管理", businessType = BusinessType.INSERT)
+    @Log(title = "用户管理", businessType = BusinessTypeEnum.INSERT)
     @Operation(summary = "保存用户")
     @PostMapping("save")
     public Result<Boolean> save(@RequestBody SysUser user) {

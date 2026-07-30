@@ -2,7 +2,8 @@ package com.qrh.youshangdache.payment.service.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.qrh.youshangdache.common.constant.MqConst;
+import com.qrh.youshangdache.common.constant.ExchangeConst;
+import com.qrh.youshangdache.common.constant.RoutingConst;
 import com.qrh.youshangdache.common.constant.SystemConstant;
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
@@ -114,10 +115,10 @@ public class WxProfitsharingServiceImpl implements WxProfitsharingService {
             profitsharingInfoMapper.insert(profitsharingInfo);
 
             //分账成功，发送消息
-            rabbitService.sendMessage(MqConst.EXCHANGE_ORDER, MqConst.ROUTING_PROFITSHARING_SUCCESS, paymentInfo.getOrderNo());
+            rabbitService.sendMessage(ExchangeConst.ORDER, RoutingConst.PROFITSHARING_SUCCESS, paymentInfo.getOrderNo());
         } else if(ordersEntity.getState().name().equals("PROCESSING")) {
             //如果状态是分账中，等待2分钟再执行分账
-            rabbitService.sendDelayMessage(MqConst.EXCHANGE_PROFITSHARING, MqConst.ROUTING_PROFITSHARING, JSON.toJSONString(profitsharingForm), SystemConstant.PROFITSHARING_DELAY_TIME);
+            rabbitService.sendDelayMessage(ExchangeConst.PROFITSHARING, RoutingConst.PROFITSHARING, JSON.toJSONString(profitsharingForm), SystemConstant.PROFITSHARING_DELAY_TIME);
         } else {
             log.error("执行分账失败");
             throw new GuiguException(ResultCodeEnum.PROFITSHARING_FAIL);

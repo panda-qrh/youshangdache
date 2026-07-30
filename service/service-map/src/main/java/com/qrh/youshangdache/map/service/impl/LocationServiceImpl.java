@@ -220,7 +220,7 @@ public class LocationServiceImpl implements LocationService {
                     continue;
                 }
                 //订单里程判断，orderDistance==0：不限制
-                if (driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMIT &&
+                if (driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION &&
                         driverSet.getOrderDistance()
                                 .subtract(searchNearByDriverForm.getMileageDistance())
                                 .doubleValue() < 0) {

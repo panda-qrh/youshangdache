@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.order.reveiver;
 
-import com.qrh.youshangdache.common.constant.MqConst;
+import com.qrh.youshangdache.common.constant.ExchangeConst;
+import com.qrh.youshangdache.common.constant.QueueConst;
+import com.qrh.youshangdache.common.constant.RoutingConst;
 import com.qrh.youshangdache.order.service.OrderInfoService;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Resource;
@@ -31,9 +33,9 @@ public class OrderReceiver {
      * @throws IOException
      */
     @RabbitListener(bindings = @QueueBinding(
-            exchange = @Exchange(value = MqConst.EXCHANGE_CANCEL_ORDER, type = "x-delayed-message", arguments = @Argument(name = "x-delayed-type", value="direct"),durable = "true", autoDelete = "false"),
-            value = @Queue(value = MqConst.QUEUE_CANCEL_ORDER, durable = "true"),
-            key = {MqConst.ROUTING_CANCEL_ORDER}
+            exchange = @Exchange(value = ExchangeConst.CANCEL_ORDER, type = "x-delayed-message", arguments = @Argument(name = "x-delayed-type", value="direct"),durable = "true", autoDelete = "false"),
+            value = @Queue(value = QueueConst.CANCEL_ORDER, durable = "true"),
+            key = {RoutingConst.CANCEL_ORDER}
     ))
     public void systemCancelOrder(String orderId, Message message, Channel channel) throws IOException {
         try {
@@ -57,9 +59,9 @@ public class OrderReceiver {
      * @throws IOException
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = MqConst.QUEUE_PROFITSHARING_SUCCESS, durable = "true"),
-            exchange = @Exchange(value = MqConst.EXCHANGE_ORDER),
-            key = {MqConst.ROUTING_PROFITSHARING_SUCCESS}
+            value = @Queue(value = QueueConst.PROFITSHARING_SUCCESS, durable = "true"),
+            exchange = @Exchange(value = ExchangeConst.ORDER),
+            key = {RoutingConst.PROFITSHARING_SUCCESS}
     ))
     public void profitsharingSuccess(String orderNo, Message message, Channel channel) throws IOException {
         orderInfoService.updateProfitsharingStatus(orderNo);

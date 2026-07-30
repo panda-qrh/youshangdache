@@ -38,7 +38,7 @@ public interface CustomerInfoFeignClient {
      * @return true绑定 | false未绑定
      */
     @GetMapping("/customer/info/updateWxPhoneNumber")
-    public Result<Boolean> updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm);
+    public Result<Void> updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm);
 
     @GetMapping("/customer/info/getCustomerOpenId/{customerId}")
     public Result<String> getCustomerOpenId(@PathVariable Long customerId);

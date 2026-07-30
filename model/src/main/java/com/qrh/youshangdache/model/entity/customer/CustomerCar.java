@@ -4,6 +4,9 @@ import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+/**
+ * 客户（司机）的车基本信息
+ */
 @Data
 @Schema(description = "CustomerCar")
 public class CustomerCar extends BaseEntity {

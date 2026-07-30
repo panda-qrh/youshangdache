@@ -8,6 +8,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * 司机账号
+ */
 @Data
 @Schema(description = "DriverAccount")
 @TableName("driver_account")

@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "wx.miniapp")
 @Data
 public class WxConfigurationProperties {
-    //    # 小程序微信公众平台appId
+    /** 小程序微信公众平台appId */
     private String appId;
-    //    # 小程序微信公众平台api秘钥
+    /** 小程序微信公众平台api秘钥 */
     private String secret;
 }

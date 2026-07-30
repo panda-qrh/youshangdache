@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.mgr.controller;
 
-import com.atguigu.daijia.common.annotation.Log;
-import com.atguigu.daijia.common.enums.BusinessType;
+import com.qrh.youshangdache.common.annotation.Log;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.mgr.service.SysMenuService;
 import com.qrh.youshangdache.model.entity.system.SysMenu;
@@ -30,7 +30,7 @@ public class SysMenuController {
         return Result.ok(list);
     }
 
-    @Log(title = "菜单管理", businessType = BusinessType.INSERT)
+    @Log(title = "菜单管理", businessType = BusinessTypeEnum.INSERT)
     @PreAuthorize("hasAuthority('bnt.sysMenu.add')")
     @Operation(summary = "新增菜单")
     @PostMapping("save")
@@ -39,7 +39,7 @@ public class SysMenuController {
         return Result.ok();
     }
 
-    @Log(title = "菜单管理", businessType = BusinessType.UPDATE)
+    @Log(title = "菜单管理", businessType = BusinessTypeEnum.UPDATE)
     @PreAuthorize("hasAuthority('bnt.sysMenu.update')")
     @Operation(summary = "修改菜单")
     @PutMapping("update")
@@ -48,7 +48,7 @@ public class SysMenuController {
         return Result.ok();
     }
 
-    @Log(title = "菜单管理", businessType = BusinessType.DELETE)
+    @Log(title = "菜单管理", businessType = BusinessTypeEnum.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysMenu.remove')")
     @Operation(summary = "删除菜单")
     @DeleteMapping("remove/{id}")
@@ -65,7 +65,7 @@ public class SysMenuController {
         return Result.ok(list);
     }
 
-    @Log(title = "角色管理", businessType = BusinessType.ASSIGN)
+    @Log(title = "角色管理", businessType = BusinessTypeEnum.ASSIGN)
     @PreAuthorize("hasAuthority('bnt.sysRole.assignAuth')")
     @Operation(summary = "给角色分配权限")
     @PostMapping("/doAssign")

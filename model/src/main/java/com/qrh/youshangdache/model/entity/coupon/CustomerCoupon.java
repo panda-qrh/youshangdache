@@ -3,6 +3,7 @@ package com.qrh.youshangdache.model.entity.coupon;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.CouponStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -23,9 +24,9 @@ public class CustomerCoupon extends BaseEntity {
 	@TableField("customer_id")
 	private Long customerId;
 
-    @Schema(description = "购物券状态（1：未使用 2：已使用）")
+    @Schema(description = "优惠券状态（1：未使用 2：已使用）")
 	@TableField("status")
-	private Integer status;
+	private CouponStatusEnum status;
 
     @Schema(description = "领取时间")
 	@TableField("receive_time")

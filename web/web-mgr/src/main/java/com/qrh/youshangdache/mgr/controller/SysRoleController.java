@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.mgr.controller;
 
-import com.atguigu.daijia.common.annotation.Log;
-import com.atguigu.daijia.common.enums.BusinessType;
+import com.qrh.youshangdache.common.annotation.Log;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.mgr.service.SysRoleService;
 import com.qrh.youshangdache.model.entity.system.SysRole;
@@ -58,7 +58,7 @@ public class SysRoleController {
         return Result.ok(role);
     }
 
-    @Log(title = "角色管理", businessType = BusinessType.INSERT)
+    @Log(title = "角色管理", businessType = BusinessTypeEnum.INSERT)
     @PreAuthorize("hasAuthority('bnt.sysRole.add')")
     @Operation(summary = "新增角色")
     @PostMapping("save")
@@ -67,7 +67,7 @@ public class SysRoleController {
         return Result.ok();
     }
 
-    @Log(title = "角色管理", businessType = BusinessType.UPDATE)
+    @Log(title = "角色管理", businessType = BusinessTypeEnum.UPDATE)
     @PreAuthorize("hasAuthority('bnt.sysRole.update')")
     @Operation(summary = "修改角色")
     @PutMapping("update")
@@ -76,7 +76,7 @@ public class SysRoleController {
         return Result.ok();
     }
 
-    @Log(title = "角色管理", businessType = BusinessType.DELETE)
+    @Log(title = "角色管理", businessType = BusinessTypeEnum.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @Operation(summary = "删除角色")
     @DeleteMapping("remove/{id}")
@@ -85,7 +85,7 @@ public class SysRoleController {
         return Result.ok();
     }
 
-    @Log(title = "角色管理", businessType = BusinessType.DELETE)
+    @Log(title = "角色管理", businessType = BusinessTypeEnum.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @Operation(summary = "根据id列表删除")
     @DeleteMapping("batchRemove")
@@ -101,7 +101,7 @@ public class SysRoleController {
         return Result.ok(roleMap);
     }
 
-    @Log(title = "用户管理", businessType = BusinessType.ASSIGN)
+    @Log(title = "用户管理", businessType = BusinessTypeEnum.ASSIGN)
     @Operation(summary = "根据用户分配角色")
     @PostMapping("/doAssign")
     public Result doAssign(@RequestBody AssginRoleVo assginRoleVo) {

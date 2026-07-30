@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.mgr.controller;
 
-import com.atguigu.daijia.common.annotation.Log;
-import com.atguigu.daijia.common.enums.BusinessType;
+import com.qrh.youshangdache.common.annotation.Log;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.mgr.service.SysPostService;
 import com.qrh.youshangdache.model.entity.system.SysPost;
@@ -50,7 +50,7 @@ public class SysPostController {
 		return Result.ok(sysPostService.findAll());
 	}
 
-	@Log(title = "岗位管理", businessType = BusinessType.INSERT)
+	@Log(title = "岗位管理", businessType = BusinessTypeEnum.INSERT)
 	@Operation(summary = "新增")
     @PreAuthorize("hasAuthority('bnt.sysPost.add')")
 	@PostMapping("save")
@@ -59,7 +59,7 @@ public class SysPostController {
 		return Result.ok();
 	}
 
-	@Log(title = "岗位管理", businessType = BusinessType.UPDATE)
+	@Log(title = "岗位管理", businessType = BusinessTypeEnum.UPDATE)
 	@Operation(summary = "修改")
 	@PreAuthorize("hasAuthority('bnt.sysPost.update')")
 	@PutMapping("update")
@@ -68,7 +68,7 @@ public class SysPostController {
 		return Result.ok();
 	}
 
-	@Log(title = "岗位管理", businessType = BusinessType.DELETE)
+	@Log(title = "岗位管理", businessType = BusinessTypeEnum.DELETE)
 	@Operation(summary = "删除")
 	@PreAuthorize("hasAuthority('bnt.sysPost.remove')")
 	@DeleteMapping("remove/{id}")

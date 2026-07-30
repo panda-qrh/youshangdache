@@ -27,7 +27,7 @@ public class OrderMonitor extends BaseEntity {
 
     @Schema(description = "是否报警")
 	@TableField("is_alarm")
-	private Integer isAlarm;
+	private Boolean isAlarm;
 
     @Schema(description = "状态")
 	@TableField("status")

@@ -29,7 +29,7 @@ public interface CustomerService {
      * @param updateWxPhoneForm
      * @return true绑定 | false未绑定
      */
-    Boolean updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm);
+    void updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm);
 
     /**
      * 乘客如果已经下过单了，而且这个订单在执行中，没有结束，

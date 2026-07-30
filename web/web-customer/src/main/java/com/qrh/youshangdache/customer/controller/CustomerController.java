@@ -55,10 +55,10 @@ public class CustomerController {
     @Operation(summary = "登录后检查该用户是否绑定手机号，没有绑定，则提示并要求用户绑定手机号")
     @GetMapping("/updateWxPhone")
     @Login
-    public Result<Boolean> updateWxPhone(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
+    public Result<Void> updateWxPhone(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
         //用于微信公众号个人版不能获取用户的手机号，所以这里直接硬编码写死返回true
-        //        Boolean bool = customerService.updateWxPhoneNumber(updateWxPhoneForm);
-        return Result.ok(true);
+        customerService.updateWxPhoneNumber(updateWxPhoneForm);
+        return Result.ok();
     }
 
     /**

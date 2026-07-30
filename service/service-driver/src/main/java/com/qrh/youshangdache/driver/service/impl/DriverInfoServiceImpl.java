@@ -1,15 +1,20 @@
 package com.qrh.youshangdache.driver.service.impl;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
+import com.qrh.youshangdache.common.config.thread.ThreadPoolConfig;
 import com.qrh.youshangdache.common.constant.SystemConstant;
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
+import com.qrh.youshangdache.common.util.IpUtil;
 import com.qrh.youshangdache.driver.config.TencentCloudProperties;
 import com.qrh.youshangdache.driver.mapper.*;
 import com.qrh.youshangdache.driver.service.CosService;
 import com.qrh.youshangdache.driver.service.DriverInfoService;
+import com.qrh.youshangdache.model.entity.customer.CustomerLoginLog;
 import com.qrh.youshangdache.model.entity.driver.*;
+import com.qrh.youshangdache.model.enums.AccountStatusEnum;
+import com.qrh.youshangdache.model.enums.DriverServiceStatusEnum;
+import com.qrh.youshangdache.model.enums.LoginStatusEnum;
 import com.qrh.youshangdache.model.form.driver.DriverFaceModelForm;
 import com.qrh.youshangdache.model.form.driver.UpdateDriverAuthInfoForm;
 import com.qrh.youshangdache.model.vo.driver.DriverAuthInfoVo;
@@ -24,10 +29,13 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.iai.v20200303.IaiClient;
 import com.tencentcloudapi.iai.v20200303.models.*;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -58,6 +66,8 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     private TencentCloudProperties tencentCloudProperties;
     @Resource
     private DriverFaceRecognitionMapper driverFaceRecognitionMapper;
+    @Resource
+    private HttpServletRequest request;
 
     /**
      * 获取司机openId
@@ -116,7 +126,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     public Boolean updateServiceStatus(Long driverId, Integer status) {
         LambdaQueryWrapper<DriverSet> queryWrapper = new LambdaQueryWrapper<DriverSet>().eq(DriverSet::getDriverId, driverId);
         DriverSet driverSet = new DriverSet();
-        driverSet.setServiceStatus(status);
+        driverSet.setServiceStatus(DriverServiceStatusEnum.of(status));
         return driverSetMapper.update(driverSet, queryWrapper) > 0;
     }
 
@@ -272,14 +282,10 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     public DriverLoginVo getDriverLoginInfo(Long driverId) {
         //根据司机id获取司机信息
         DriverInfo driverInfo = driverInfoMapper.selectById(driverId);
-        //driverInfo->DriverLoginVo
         if (driverInfo == null) throw new GuiguException(ResultCodeEnum.ACCOUNT_NOT_EXIST);
         DriverLoginVo driverLoginVo = new DriverLoginVo();
         BeanUtils.copyProperties(driverInfo, driverLoginVo);
-        //是否建立人脸识别
-        String faceModelId = driverInfo.getFaceModelId();
-        boolean isArchiveFace = StringUtils.hasText(faceModelId);
-        driverLoginVo.setIsArchiveFace(isArchiveFace);
+        driverLoginVo.setIsArchiveFace(StringUtils.hasText(driverInfo.getFaceModelId()));//是否建立人脸识别
         return driverLoginVo;
     }
 
@@ -287,50 +293,107 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
      * 司机端-小程序授权登录
      *
      * @param code 微信临时票据
-     * @return 用户id
+     * @return 司机id
      */
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public Long login(String code) {
+        String openId = null;
+        String failMsg = null;
         try {
             //根据code+小程序id+秘钥请求微信接口，返回openid
-            WxMaJscode2SessionResult sessionInfo = wxMaService.getUserService().getSessionInfo(code);
-            String openId = sessionInfo.getOpenid();
-            //根据openid查询是否第一次登录
-            LambdaQueryWrapper<DriverInfo> queryWrapper = new LambdaQueryWrapper<DriverInfo>()
-                    .eq(StringUtils.hasText(openId), DriverInfo::getWxOpenId, openId);
-            DriverInfo driverInfo = driverInfoMapper.selectOne(queryWrapper);
-            //如果是第一次登录，driverInfo应该为null
-            if (driverInfo == null) {
-                //添加司机基本信息
-                driverInfo = new DriverInfo();
-                driverInfo.setNickname("用户" + System.currentTimeMillis());
-                driverInfo.setAvatarUrl("https://oss.aliyuncs.com/aliyun_id_photo_bucket/default_handsome.jpg");
-                driverInfo.setWxOpenId(openId);
-                driverInfoMapper.insert(driverInfo);
-                //初始化司机配置
-                DriverSet driverSet = new DriverSet();
-                driverSet.setDriverId(driverInfo.getId());
-                driverSet.setOrderDistance(new BigDecimal("0"));
-                driverSet.setAcceptDistance(new BigDecimal(String.valueOf(SystemConstant.ACCEPT_DISTANCE)));
-                driverSet.setIsAutoAccept(0);
-                driverSetMapper.insert(driverSet);
-                //设置司机账户信息
-                DriverAccount driverAccount = new DriverAccount();
-                driverAccount.setDriverId(driverInfo.getId());
-                driverAccountMapper.insert(driverAccount);
-            }
-            //记录司机登录信息
-            DriverLoginLog driverLoginLog = new DriverLoginLog();
-            driverLoginLog.setDriverId(driverInfo.getId());
-            driverLoginLog.setMsg("小程序登录");
-            driverLoginLogMapper.insert(driverLoginLog);
-
-            //返回司机的id
-            return driverInfo.getId();
+            openId = wxMaService.getUserService()
+                    .getSessionInfo(code)
+                    .getOpenid();
         } catch (WxErrorException e) {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+            log.warn("微信登录失败，code: {}", code, e);
+            failMsg = "微信授权失败";
         }
+        if (!StringUtils.hasText(openId)) {
+            if (failMsg == null) {
+                failMsg = "openId为空";
+            }
+            recordLoginLog(new DriverLoginLog(null, IpUtil.getIpAddress(request), LoginStatusEnum.FAIL, failMsg));
+            throw new GuiguException(ResultCodeEnum.LOGIN_AUTH);
+        }
+        //根据openid查询是否第一次登录
+        DriverInfo driverInfo = driverInfoMapper.selectOne(
+                new LambdaQueryWrapper<DriverInfo>().eq(DriverInfo::getWxOpenId, openId)
+        );
+        //如果是第一次登录，driverInfo应该为null
+        boolean isFirstLogin = driverInfo == null;
+        if (isFirstLogin) {
+            //添加司机基本信息
+            driverInfo = initialDriverInfoWithSimple(openId);
+            //初始化司机配置
+            initialDriverSet(driverInfo.getId());
+            //设置司机账户信息
+            initialDriverAccountInfo(driverInfo.getId());
+        }
+        //异步记录司机登录信息
+        String msg = isFirstLogin ? "小程序首次登录" : "小程序登录";
+        recordLoginLog(new DriverLoginLog(driverInfo.getId(), IpUtil.getIpAddress(request), LoginStatusEnum.SUCCESS, msg));
+        //返回司机的id
+        return driverInfo.getId();
+    }
+
+    /**
+     * 异步记录登录日志<br>
+     * <p>
+     * 线程池：{@link ThreadPoolConfig#loginLogExecutor()}
+     *
+     * @param loginLog 待记录的对象
+     */
+    @Async("loginLogExecutor")
+    public void recordLoginLog(DriverLoginLog loginLog) {
+        driverLoginLogMapper.insert(loginLog);
+    }
+
+    /**
+     * 初始化司机的账户信息
+     *
+     * @param driverId 司机的id
+     */
+    private void initialDriverAccountInfo(Long driverId) {
+        DriverAccount driverAccount = new DriverAccount();
+        driverAccount.setDriverId(driverId);
+        driverAccount.setTotalAmount(BigDecimal.ZERO);
+        driverAccount.setLockAmount(BigDecimal.ZERO);
+        driverAccount.setAvailableAmount(BigDecimal.ZERO);
+        driverAccount.setTotalIncomeAmount(BigDecimal.ZERO);
+        driverAccount.setTotalPayAmount(BigDecimal.ZERO);
+        driverAccountMapper.insert(driverAccount);
+    }
+
+    /**
+     * 初始化司机的设置
+     *
+     * @param driverId 司机id
+     */
+    private void initialDriverSet(Long driverId) {
+        DriverSet driverSet = new DriverSet();
+        driverSet.setDriverId(driverId);
+        driverSet.setServiceStatus(DriverServiceStatusEnum.DRIVER_NOT_SERVICE);
+        driverSet.setOrderDistance(BigDecimal.ZERO);
+        driverSet.setAcceptDistance(new BigDecimal(String.valueOf(SystemConstant.ACCEPT_DISTANCE)));
+        driverSet.setIsAutoAccept(Boolean.FALSE);
+        driverSetMapper.insert(driverSet);
+    }
+
+    /**
+     * 简单初始化司机的信息（信息完不完整）
+     *
+     * @param openId 微信openId
+     */
+    @NotNull
+    private DriverInfo initialDriverInfoWithSimple(String openId) {
+        DriverInfo driverInfo = new DriverInfo();
+        driverInfo.setNickname("用户" + System.currentTimeMillis());
+        driverInfo.setAvatarUrl("https://oss.aliyuncs.com/aliyun_id_photo_bucket/default_handsome.jpg");
+        driverInfo.setWxOpenId(openId);
+        driverInfo.setStatus(AccountStatusEnum.NORMAL);
+        driverInfoMapper.insert(driverInfo);
+        return driverInfo;
     }
 
 

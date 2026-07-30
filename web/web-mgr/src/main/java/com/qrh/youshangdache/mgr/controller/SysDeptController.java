@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.mgr.controller;
 
-import com.atguigu.daijia.common.annotation.Log;
-import com.atguigu.daijia.common.enums.BusinessType;
+import com.qrh.youshangdache.common.annotation.Log;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.mgr.service.SysDeptService;
 import com.qrh.youshangdache.model.entity.system.SysDept;
@@ -28,7 +28,7 @@ public class SysDeptController {
 		return Result.ok(sysDept);
 	}
 
-	@Log(title = "部门管理", businessType = BusinessType.INSERT)
+	@Log(title = "部门管理", businessType = BusinessTypeEnum.INSERT)
 	@Operation(summary = "新增")
 	@PreAuthorize("hasAuthority('bnt.sysDept.add')")
 	@PostMapping("save")
@@ -37,7 +37,7 @@ public class SysDeptController {
 		return Result.ok();
 	}
 
-	@Log(title = "部门管理", businessType = BusinessType.UPDATE)
+	@Log(title = "部门管理", businessType = BusinessTypeEnum.UPDATE)
 	@Operation(summary = "修改")
 	@PreAuthorize("hasAuthority('bnt.sysDept.update')")
 	@PutMapping("update")
@@ -46,7 +46,7 @@ public class SysDeptController {
 		return Result.ok();
 	}
 
-	@Log(title = "部门管理", businessType = BusinessType.DELETE)
+	@Log(title = "部门管理", businessType = BusinessTypeEnum.DELETE)
 	@Operation(summary = "删除")
 	@PreAuthorize("hasAuthority('bnt.sysDept.remove')")
 	@DeleteMapping("remove/{id}")
@@ -68,7 +68,7 @@ public class SysDeptController {
 		return Result.ok(sysDeptService.findUserNodes());
 	}
 
-	@Log(title = "部门管理", businessType = BusinessType.STATUS)
+	@Log(title = "部门管理", businessType = BusinessTypeEnum.STATUS)
 	@Operation(summary = "更新状态")
 	@GetMapping("updateStatus/{id}/{status}")
 	public Result updateStatus(@PathVariable Long id, @PathVariable Integer status) {

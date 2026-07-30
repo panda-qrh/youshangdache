@@ -8,6 +8,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 司机人脸认证
+ */
 @Data
 @Schema(description = "DriverFaceRecognition")
 @TableName("driver_face_recognition")
