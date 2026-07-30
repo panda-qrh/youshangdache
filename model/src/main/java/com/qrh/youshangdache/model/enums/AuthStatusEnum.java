@@ -1,13 +1,15 @@
 package com.qrh.youshangdache.model.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * 司机和用户认证状态枚举类
  */
 @Getter
+@AllArgsConstructor
 public enum AuthStatusEnum {
-    // 0:未认证 1：审核中 2：认证通过 -1：认证未通过UNAUTHENTIC
     UNAUTHORIZED(0, "未认证"),
     REVIEWING(1, "审核中"),
     AUTHENTICATION_PASSED(2, "认证通过"),
@@ -15,14 +17,22 @@ public enum AuthStatusEnum {
     /**
      * 状态代号
      */
-    private final Integer status;
+    @EnumValue
+    private final Integer code;
     /**
      * 状态代号对应的描述
      */
-    private final String description;
+    private final String message;
 
-    private AuthStatusEnum(final Integer status, final String description) {
-        this.status = status;
-        this.description = description;
+    /**
+     * 根据code匹配枚举
+     * @param code 状态码
+     * @return 枚举
+     */
+    public static AuthStatusEnum of(int code) {
+        for (AuthStatusEnum e : values()) {
+            if (e.code == code) return e;
+        }
+        throw new IllegalArgumentException("无效的认证状态码: " + code);
     }
 }

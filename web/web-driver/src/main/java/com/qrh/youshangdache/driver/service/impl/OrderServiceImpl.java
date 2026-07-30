@@ -139,11 +139,14 @@ public class OrderServiceImpl implements OrderService {
 
         //4.计算代驾实际费用
         CompletableFuture<FeeRuleResponseVo> feeRuleResponseVoCF = realDistanceCF.thenApplyAsync((realDistance) -> {
-            FeeRuleRequestForm feeRuleRequestForm = new FeeRuleRequestForm();
-            feeRuleRequestForm.setDistance(realDistance);
-            feeRuleRequestForm.setStartTime(orderInfo.getStartServiceTime());
             Integer waitMinute = Math.abs((int) ((orderInfo.getArriveTime().getTime() - orderInfo.getAcceptTime().getTime()) / (1000 * 60)));
-            feeRuleRequestForm.setWaitMinute(waitMinute);
+
+            FeeRuleRequestForm feeRuleRequestForm=FeeRuleRequestForm.builder()
+                    .distance(realDistance)
+                    .startTime(orderInfo.getStartServiceTime())
+                    .waitMinute(waitMinute)
+                    .build();
+
             FeeRuleResponseVo feeRuleResponseVo = feeRuleFeignClient.calculateOrderFee(feeRuleRequestForm).getData();
             //订单总金额 需加上 路桥费、停车费、其他费用、乘客好处费
             BigDecimal totalAmount = feeRuleResponseVo.getTotalAmount()
@@ -162,6 +165,7 @@ public class OrderServiceImpl implements OrderService {
             String endTime = new DateTime(orderInfo.getEndServiceTime()).toString("yyyy-MM-dd") + " 24:00:00";
             return orderInfoFeignClient.getOrderNumByTime(startTime, endTime).getData();
         }, threadPoolExecutor);
+
         //5.2.封装参数
         CompletableFuture<RewardRuleResponseVo> rewardRuleResponseVoCF = orderNumCF.thenApplyAsync((orderNum) -> {
             RewardRuleRequestForm rewardRuleRequestForm = new RewardRuleRequestForm();
@@ -289,7 +293,7 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderBillVo orderBillVo = null;
         OrderProfitsharingVo orderProfitsharingVo = null;
-        if (orderInfo.getStatus() >= OrderStatusEnum.END_SERVICE.getStatus()) {
+        if (orderInfo.getStatus() >= OrderStatusEnum.END_SERVICE.getCode()) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId).getData();
             orderProfitsharingVo = orderInfoFeignClient.getOrderProfitsharing(orderId).getData();
         }

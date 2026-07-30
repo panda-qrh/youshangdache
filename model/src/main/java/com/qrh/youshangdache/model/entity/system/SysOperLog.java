@@ -3,6 +3,9 @@ package com.qrh.youshangdache.model.entity.system;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
+import com.qrh.youshangdache.model.enums.OperationStatusEnum;
+import com.qrh.youshangdache.model.enums.OperatorTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -19,9 +22,9 @@ public class SysOperLog extends BaseEntity {
 	@TableField("title")
 	private String title;
 
-	@Schema(description = "业务类型（0其它 1新增 2修改 3删除）")
+	@Schema(description = "业务类型（0其它 1新增 2修改 3删除 4授权 5导出 6导入 7更新状态 8清空数据）")
 	@TableField("business_type")
-	private String businessType;
+	private BusinessTypeEnum businessType;
 
 	@Schema(description = "方法名称")
 	@TableField("method")
@@ -33,7 +36,7 @@ public class SysOperLog extends BaseEntity {
 
 	@Schema(description = "操作类别（0其它 1后台用户 2手机端用户）")
 	@TableField("operator_type")
-	private String operatorType;
+	private OperatorTypeEnum operatorType;
 
 	@Schema(description = "操作人员")
 	@TableField("oper_name")
@@ -61,7 +64,7 @@ public class SysOperLog extends BaseEntity {
 
 	@Schema(description = "操作状态（0正常 1异常）")
 	@TableField("status")
-	private Integer status;
+	private OperationStatusEnum status;
 
 	@Schema(description = "错误消息")
 	@TableField("error_msg")

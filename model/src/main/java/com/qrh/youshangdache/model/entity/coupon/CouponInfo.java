@@ -3,6 +3,8 @@ package com.qrh.youshangdache.model.entity.coupon;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.CouponPublishStatusEnum;
+import com.qrh.youshangdache.model.enums.CouponTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -16,9 +18,9 @@ public class CouponInfo extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
 
-    @Schema(description = "优惠卷类型：1 现金券； 2 折扣")
+    @Schema(description = "优惠卷类型：1 现金券，2 折扣券")
 	@TableField("coupon_type")
-	private Integer couponType;
+	private CouponTypeEnum couponType;
 
     @Schema(description = "优惠卷名字")
 	@TableField("name")
@@ -62,6 +64,6 @@ public class CouponInfo extends BaseEntity {
 
     @Schema(description = "状态[0-未发布，1-已发布， -1-已过期]")
 	@TableField("status")
-	private Integer status;
+	private CouponPublishStatusEnum status;
 
 }

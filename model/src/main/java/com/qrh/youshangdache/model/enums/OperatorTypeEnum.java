@@ -1,9 +1,13 @@
-package com.qrh.youshangdache.common.enums;
+package com.qrh.youshangdache.model.enums;
+
+
+import lombok.Getter;
 
 /**
  * 操作人类别枚举类
  */
-public enum OperatorType {
+@Getter
+public enum OperatorTypeEnum {
     /**
      * 其它
      */
@@ -12,10 +16,10 @@ public enum OperatorType {
     /**
      * 后台用户
      */
-    MANAGE,
+    MANAGEMENT,
 
     /**
      * 手机端用户
      */
-    MOBILE
+    MOBILE_PHONE_USER
 }

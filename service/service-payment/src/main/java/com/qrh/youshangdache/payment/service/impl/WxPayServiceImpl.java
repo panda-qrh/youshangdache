@@ -2,7 +2,8 @@ package com.qrh.youshangdache.payment.service.impl;
 
 import com.alibaba.fastjson.JSON;
 
-import com.qrh.youshangdache.common.constant.MqConst;
+import com.qrh.youshangdache.common.constant.ExchangeConst;
+import com.qrh.youshangdache.common.constant.RoutingConst;
 import com.qrh.youshangdache.common.constant.SystemConstant;
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
@@ -63,8 +64,8 @@ public class WxPayServiceImpl implements WxPayService {
         if(null != orderRewardVo.getRewardFee() && orderRewardVo.getRewardFee().doubleValue() > 0) {
             TransferForm transferForm = new TransferForm();
             transferForm.setTradeNo(orderNo);
-            transferForm.setTradeType(TradeTypeEnum.REWARD.getType());
-            transferForm.setContent(TradeTypeEnum.REWARD.getContent());
+            transferForm.setTradeType(TradeTypeEnum.REWARD.getCode());
+            transferForm.setContent(TradeTypeEnum.REWARD.getMessage());
             transferForm.setAmount(orderRewardVo.getRewardFee());
             transferForm.setDriverId(orderRewardVo.getDriverId());
             driverAccountFeignClient.transfer(transferForm);
@@ -78,7 +79,7 @@ public class WxPayServiceImpl implements WxPayService {
         profitsharingForm.setAmount(orderProfitsharingVo.getDriverIncome());
         profitsharingForm.setDriverId(orderRewardVo.getDriverId());
         //分账有延迟，支付成功后最少2分钟执行分账申请
-        rabbitService.sendDelayMessage(MqConst.EXCHANGE_PROFITSHARING, MqConst.ROUTING_PROFITSHARING, JSON.toJSONString(profitsharingForm), SystemConstant.PROFITSHARING_DELAY_TIME);
+        rabbitService.sendDelayMessage(ExchangeConst.PROFITSHARING, RoutingConst.PROFITSHARING, JSON.toJSONString(profitsharingForm), SystemConstant.PROFITSHARING_DELAY_TIME);
 
     }
 
@@ -144,7 +145,7 @@ public class WxPayServiceImpl implements WxPayService {
         // 表示交易成功！
 
         // 后续更新订单状态！ 使用消息队列！
-        rabbitService.sendMessage(MqConst.EXCHANGE_ORDER, MqConst.ROUTING_PAY_SUCCESS, paymentInfo.getOrderNo());
+        rabbitService.sendMessage(ExchangeConst.ORDER, RoutingConst.PAY_SUCCESS, paymentInfo.getOrderNo());
     }
 
     @Override

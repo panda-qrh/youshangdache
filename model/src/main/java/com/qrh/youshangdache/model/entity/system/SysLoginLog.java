@@ -3,6 +3,7 @@ package com.qrh.youshangdache.model.entity.system;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.LoginStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -23,9 +24,9 @@ public class SysLoginLog extends BaseEntity {
 	@TableField("ipaddr")
 	private String ipaddr;
 
-	@Schema(description = "登录状态（0成功 1失败）")
+	@Schema(description = "登录状态（0登录成功 1登录失败）")
 	@TableField("status")
-	private Integer status;
+	private LoginStatusEnum status;
 
 	@Schema(description = "提示信息")
 	@TableField("msg")

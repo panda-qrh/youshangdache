@@ -3,12 +3,16 @@ package com.qrh.youshangdache.model.entity.order;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 订单的详细信息
+ */
 @Data
 @Schema(description = "OrderInfo")
 @TableName("order_info")
@@ -118,7 +122,7 @@ public class OrderInfo extends BaseEntity {
 
     @Schema(description = "订单状态：1等待接单，2已接单，3司机已到达，4开始代驾，5结束代驾，6未付款，7已付款，8订单已结束，9顾客撤单，10司机撤单，11事故关闭，12其他")
 	@TableField("status")
-	private Integer status;
+	private OrderStatusEnum status;
 
     @Schema(description = "订单备注信息")
 	@TableField("remark")

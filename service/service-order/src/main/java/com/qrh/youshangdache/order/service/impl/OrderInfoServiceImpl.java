@@ -3,8 +3,9 @@ package com.qrh.youshangdache.order.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.qrh.youshangdache.common.constant.MqConst;
+import com.qrh.youshangdache.common.constant.ExchangeConst;
 import com.qrh.youshangdache.common.constant.RedisConstant;
+import com.qrh.youshangdache.common.constant.RoutingConst;
 import com.qrh.youshangdache.common.constant.SystemConstant;
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
@@ -93,11 +94,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = {Exception.class})
     public void systemCancelOrder(Long orderId) {
         Integer orderStatus = this.getOrderStatus(orderId);
-        if (null != orderStatus && orderStatus.intValue() == OrderStatusEnum.WAITING_ACCEPT.getStatus().intValue()) {
+        if (null != orderStatus && orderStatus.intValue() == OrderStatusEnum.WAITING_ACCEPT.getCode().intValue()) {
             //取消订单
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setId(orderId);
-            orderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER.getStatus());
+            orderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER.getCode());
             int row = orderInfoMapper.updateById(orderInfo);
             if (row == 1) {
                 //记录日志
@@ -120,8 +121,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public void orderCancel(Long orderId) {
         OrderInfo orderInfo = orderInfoMapper.selectById(orderId);
-        if (orderInfo.getStatus() == OrderStatusEnum.WAITING_ACCEPT.getStatus()) {
-            orderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER.getStatus());
+        if (orderInfo.getStatus() == OrderStatusEnum.WAITING_ACCEPT.getCode()) {
+            orderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER.getCode());
             int i = orderInfoMapper.updateById(orderInfo);
             if (i > 0) {
                 //删除接单标识
@@ -159,12 +160,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         if (orderInfo == null) {
             throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
         }
-        if (orderInfo.getStatus().equals(OrderStatusEnum.ORDER_PAID.getStatus())) {
+        if (orderInfo.getStatus().equals(OrderStatusEnum.ORDER_PAID.getCode())) {
             return true;
         }
         //订单存在，但订单未支付
         OrderInfo orderInfo1 = new OrderInfo();
-        orderInfo1.setStatus(OrderStatusEnum.ORDER_PAID.getStatus());
+        orderInfo1.setStatus(OrderStatusEnum.ORDER_PAID.getCode());
         orderInfo1.setPayTime(new Date());
         int update = orderInfoMapper.update(orderInfo1, new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo, orderNo));
         if (update > 0) {
@@ -208,7 +209,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getId, orderId)
                 .eq(OrderInfo::getDriverId, driverId);
         OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.ORDER_UNPAID.getStatus());
+        orderInfo.setStatus(OrderStatusEnum.ORDER_UNPAID.getCode());
         int rows = orderInfoMapper.update(orderInfo, wrapper);
         if (rows > 0) {
             return true;
@@ -290,7 +291,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getDriverId, updateOrderBillForm.getDriverId());
 
         OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.END_SERVICE.getStatus());
+        orderInfo.setStatus(OrderStatusEnum.END_SERVICE.getCode());
         orderInfo.setRealAmount(updateOrderBillForm.getTotalAmount());
         orderInfo.setFavourFee(updateOrderBillForm.getFavourFee());
         orderInfo.setRealDistance(updateOrderBillForm.getRealDistance());
@@ -359,13 +360,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getDriverId, startDriveForm.getDriverId());
 
         OrderInfo updateOrderInfo = new OrderInfo();
-        updateOrderInfo.setStatus(OrderStatusEnum.START_SERVICE.getStatus());
+        updateOrderInfo.setStatus(OrderStatusEnum.START_SERVICE.getCode());
         updateOrderInfo.setStartServiceTime(new Date());
         //只能更新自己的订单
         int row = orderInfoMapper.update(updateOrderInfo, queryWrapper);
         if (row >= 1) {
             //记录日志
-            this.log(startDriveForm.getOrderId(), OrderStatusEnum.START_SERVICE.getStatus());
+            this.log(startDriveForm.getOrderId(), OrderStatusEnum.START_SERVICE.getCode());
         } else {
             throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
         }
@@ -395,7 +396,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getDriverId, updateOrderCartForm.getDriverId());
         OrderInfo orderInfo = new OrderInfo();
         BeanUtils.copyProperties(updateOrderCartForm, orderInfo);
-        orderInfo.setStatus(OrderStatusEnum.UPDATE_CART_INFO.getStatus());
+        orderInfo.setStatus(OrderStatusEnum.UPDATE_CAR_INFO.getCode());
         int rows = orderInfoMapper.update(orderInfo, queryWrapper);
         if (rows > 0) {
             return true;
@@ -418,7 +419,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getId, orderId)
                 .eq(OrderInfo::getDriverId, driverId);
         OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.DRIVER_ARRIVED.getStatus());
+        orderInfo.setStatus(OrderStatusEnum.DRIVER_ARRIVED.getCode());
         orderInfo.setArriveTime(new Date());
 
         int rows = orderInfoMapper.update(orderInfo, queryWrapper);
@@ -442,12 +443,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public CurrentOrderInfoVo searchDriverCurrentOrder(Long driverId) {
         Integer[] statusArray = {
-                OrderStatusEnum.ACCEPTED.getStatus(),
-                OrderStatusEnum.DRIVER_ARRIVED.getStatus(),
-                OrderStatusEnum.UPDATE_CART_INFO.getStatus(),
-                OrderStatusEnum.START_SERVICE.getStatus(),
-                OrderStatusEnum.END_SERVICE.getStatus(),
-                OrderStatusEnum.ORDER_UNPAID.getStatus()
+                OrderStatusEnum.ACCEPTED.getCode(),
+                OrderStatusEnum.DRIVER_ARRIVED.getCode(),
+                OrderStatusEnum.UPDATE_CAR_INFO.getCode(),
+                OrderStatusEnum.START_SERVICE.getCode(),
+                OrderStatusEnum.END_SERVICE.getCode(),
+                OrderStatusEnum.ORDER_UNPAID.getCode()
         };
         LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
                 .eq(OrderInfo::getId, driverId)
@@ -479,12 +480,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId) {
         Integer[] statusArray = {
-                OrderStatusEnum.ACCEPTED.getStatus(),
-                OrderStatusEnum.DRIVER_ARRIVED.getStatus(),
-                OrderStatusEnum.UPDATE_CART_INFO.getStatus(),
-                OrderStatusEnum.START_SERVICE.getStatus(),
-                OrderStatusEnum.END_SERVICE.getStatus(),
-                OrderStatusEnum.ORDER_UNPAID.getStatus()
+                OrderStatusEnum.ACCEPTED.getCode(),
+                OrderStatusEnum.DRIVER_ARRIVED.getCode(),
+                OrderStatusEnum.UPDATE_CAR_INFO.getCode(),
+                OrderStatusEnum.START_SERVICE.getCode(),
+                OrderStatusEnum.END_SERVICE.getCode(),
+                OrderStatusEnum.ORDER_UNPAID.getCode()
         };
         LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
                 .eq(OrderInfo::getCustomerId, customerId)
@@ -532,7 +533,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             boolean flag = lock.tryLock(RedisConstant.ROB_NEW_ORDER_LOCK_WAIT_TIME, RedisConstant.ROB_NEW_ORDER_LOCK_LEASE_TIME, TimeUnit.SECONDS);
             if (flag) {
                 OrderInfo orderInfo = orderInfoMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getId, orderId));
-                orderInfo.setStatus(OrderStatusEnum.ACCEPTED.getStatus());
+                orderInfo.setStatus(OrderStatusEnum.ACCEPTED.getCode());
                 orderInfo.setDriverId(driverId);
                 orderInfo.setAcceptTime(new Date());
                 int row = orderInfoMapper.updateById(orderInfo);
@@ -569,7 +570,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderInfo orderInfo = orderInfoMapper.selectOne(queryWrapper);
         if (null == orderInfo) {
             //返回null，feign解析会抛出异常，给默认值，后续会用
-            return OrderStatusEnum.ORDER_NOT_EXIST.getStatus();
+            return OrderStatusEnum.ORDER_NOT_EXIST.getCode();
         }
         return orderInfo.getStatus();
     }
@@ -586,7 +587,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderInfo orderInfo = new OrderInfo();
         BeanUtils.copyProperties(orderInfoForm, orderInfo);
         String orderNo = UUID.randomUUID().toString().replaceAll("-", "");
-        orderInfo.setStatus(OrderStatusEnum.WAITING_ACCEPT.getStatus());
+        orderInfo.setStatus(OrderStatusEnum.WAITING_ACCEPT.getCode());
         orderInfo.setOrderNo(orderNo);
         orderInfoMapper.insert(orderInfo);
         //生成订单之后，发送到延迟队列
@@ -596,13 +597,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //接单标识，标识不存在了说明不在等待接单状态了
         stringRedisTemplate.opsForValue()
                 .set(RedisConstant.ORDER_ACCEPT_MARK,
-                        OrderStatusEnum.ACCEPTED.getStatus().toString(),
+                        OrderStatusEnum.ACCEPTED.getCode().toString(),
                         RedisConstant.ORDER_ACCEPT_MARK_EXPIRES_TIME,
                         TimeUnit.MINUTES);
 
         //发送延迟消息，取消订单
-        rabbitService.sendDelayMessage(MqConst.EXCHANGE_CANCEL_ORDER,
-                MqConst.ROUTING_CANCEL_ORDER,
+        rabbitService.sendDelayMessage(ExchangeConst.CANCEL_ORDER,
+                RoutingConst.CANCEL_ORDER,
                 orderInfo.getId().toString(),
                 SystemConstant.CANCEL_ORDER_DELAY_TIME);
         return orderInfo.getId();

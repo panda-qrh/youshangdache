@@ -61,7 +61,7 @@ public class DriverServiceImpl implements DriverService {
     public Boolean startService(Long driverId) {
         //判断是否完成了验证
         DriverLoginVo driverLoginVo = driverInfoFeignClient.getDriverLoginInfo(driverId).getData();
-        if (!driverLoginVo.getAuthStatus().equals(AuthStatusEnum.AUTHENTICATION_PASSED.getStatus())) {
+        if (!driverLoginVo.getAuthStatus().equals(AuthStatusEnum.AUTHENTICATION_PASSED.getCode())) {
             throw new GuiguException(ResultCodeEnum.DRIVER_NOT_AUTH);
         }
         //判断当日是否人脸识别

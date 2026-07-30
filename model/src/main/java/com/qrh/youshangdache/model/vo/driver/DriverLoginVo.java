@@ -1,5 +1,6 @@
 package com.qrh.youshangdache.model.vo.driver;
 
+import com.qrh.youshangdache.model.enums.AuthStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -25,6 +26,6 @@ public class DriverLoginVo {
     private Boolean isArchiveFace;
 
     @Schema(description = "认证状态 0:未认证 1：审核中 2：认证通过 -1：认证未通过")
-    private Integer authStatus;
+    private AuthStatusEnum authStatus;
 
 }

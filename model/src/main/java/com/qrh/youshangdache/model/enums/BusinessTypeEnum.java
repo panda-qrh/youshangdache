@@ -1,9 +1,9 @@
-package com.qrh.youshangdache.common.enums;
+package com.qrh.youshangdache.model.enums;
 
 /**
  * 业务操作类型枚举类
  */
-public enum BusinessType {
+public enum BusinessTypeEnum {
     /**
      * 其它
      */
@@ -38,7 +38,6 @@ public enum BusinessType {
      * 导入
      */
     IMPORT,
-
 
     /**
      * 更新状态

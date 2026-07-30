@@ -3,6 +3,7 @@ package com.qrh.youshangdache.model.entity.driver;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.TradeTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -25,7 +26,7 @@ public class DriverAccountDetail extends BaseEntity {
 
     @Schema(description = "交易类型：1201-充值 1202-锁定 1203-解锁 1204-消费")
 	@TableField("trade_type")
-	private String tradeType;
+	private TradeTypeEnum tradeType;
 
     @Schema(description = "金额")
 	@TableField("amount")

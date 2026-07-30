@@ -1,9 +1,13 @@
 package com.qrh.youshangdache.model.entity.customer;
 
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
+import com.qrh.youshangdache.model.enums.AccountStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+/**
+ * 客户（乘客）的基本信息
+ */
 @Data
 @Schema(description = "CustomerInfo")
 public class CustomerInfo extends BaseEntity {
@@ -25,7 +29,7 @@ public class CustomerInfo extends BaseEntity {
 	@Schema(description = "电话")
 	private String phone;
 
-	@Schema(description = "1有效，2禁用")
-	private Integer status;
+	@Schema(description = "账号状态：1有效，2禁用")
+	private AccountStatusEnum status;
 
 }

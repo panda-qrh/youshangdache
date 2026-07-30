@@ -1,5 +1,6 @@
 package com.qrh.youshangdache.model.vo.customer;
 
+import com.qrh.youshangdache.model.enums.AccountStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -20,4 +21,7 @@ public class CustomerLoginVo {
 
     @Schema(description = "是否绑定手机号码")
     private Boolean isBindPhone;
+
+    @Schema(description = "账号状态：1有效，2禁用")
+    private AccountStatusEnum status;
 }

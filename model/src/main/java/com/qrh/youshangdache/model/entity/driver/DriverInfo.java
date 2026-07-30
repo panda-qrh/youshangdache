@@ -3,12 +3,17 @@ package com.qrh.youshangdache.model.entity.driver;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.AccountStatusEnum;
+import com.qrh.youshangdache.model.enums.AuthStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 司机的详细信息
+ */
 @Data
 @Schema(description = "DriverInfo")
 @TableName("driver_info")
@@ -121,15 +126,15 @@ public class DriverInfo extends BaseEntity {
 	private Integer orderCount;
 
 	@Schema(description = "评分")
-	@TableField("`score`")
+	@TableField("score")
 	private BigDecimal score;
 
     @Schema(description = "认证状态")
 	@TableField("auth_status")
-	private Integer authStatus;
+	private AuthStatusEnum authStatus;
 
     @Schema(description = "状态，1正常，2禁用")
-	@TableField("`status`")
-	private Integer status;
+	@TableField("status")
+	private AccountStatusEnum status;
 
 }

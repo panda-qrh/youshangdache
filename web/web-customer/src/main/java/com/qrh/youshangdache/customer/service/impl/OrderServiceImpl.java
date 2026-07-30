@@ -77,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
         //1.获取订单支付相关信息
         OrderPayVo orderPayVo = orderInfoFeignClient.getOrderPayVo(createWxPaymentForm.getOrderNo(), createWxPaymentForm.getCustomerId()).getData();
         //判断是否在未支付状态
-        if (orderPayVo.getStatus().intValue() != OrderStatusEnum.ORDER_UNPAID.getStatus().intValue()) {
+        if (orderPayVo.getStatus().intValue() != OrderStatusEnum.ORDER_UNPAID.getCode().intValue()) {
             throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
         }
 
@@ -196,7 +196,7 @@ public class OrderServiceImpl implements OrderService {
             driverInfoVo = driverInfoFeignClient.getDriverInfo(driverId).getData();
         }
         OrderBillVo orderBillVo = null;
-        if (orderInfo.getStatus() >= OrderStatusEnum.ORDER_UNPAID.getStatus()) {
+        if (orderInfo.getStatus() >= OrderStatusEnum.ORDER_UNPAID.getCode()) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId).getData();
         }
         OrderInfoVo orderInfoVo = new OrderInfoVo();

@@ -1,12 +1,14 @@
 package com.qrh.youshangdache.model.enums;
 
-
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * 司机服务状态枚举类
  */
 @Getter
+@AllArgsConstructor
 public enum DriverServiceStatusEnum {
     /**
      * 司机未接单
@@ -20,16 +22,23 @@ public enum DriverServiceStatusEnum {
     /**
      * 司机服务状态代号
      */
-    private final Integer serviceStatus;
+    @EnumValue
+    private final int code;
     /**
      * 司机服务状态代号对应的描述
      */
-    private final String description;
+    private final String message;
 
-    private DriverServiceStatusEnum(final Integer serviceStatus, final String description) {
-        this.serviceStatus = serviceStatus;
-        this.description = description;
+    /**
+     * 根据code获取枚举
+     * @param code 状态码
+     * @return 枚举值
+     */
+    public static DriverServiceStatusEnum of(int code) {
+        for (DriverServiceStatusEnum e : values()) {
+            if (e.code == code) return e;
+        }
+        throw new IllegalArgumentException("无效的司机服务状态码: " + code);
     }
-
 
 }
