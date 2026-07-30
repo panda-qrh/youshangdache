@@ -17,15 +17,8 @@
             <artifactId>common-util</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>model</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>

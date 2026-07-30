@@ -1,68 +1,64 @@
 package com.qrh.youshangdache.common.result;
 
 
-import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 全局统一返回结果类
  */
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "全局统一返回结果")
 public class Result<T> {
 
-    //返回码
-    private Integer code;
+    /** 返回码 */
+    @Schema(description = "返回码", example = "200")
+    private int code;
 
-    //返回消息
+    /** 返回消息 */
+    @Schema(description = "返回消息", example = "成功")
     private String message;
 
-    //返回数据
+    /** 返回数据 */
+    @Schema(description = "返回数据")
     private T data;
 
-    public Result() {
-    }
-
-    // 返回数据
-    protected static <T> Result<T> build(T data) {
-        Result<T> result = new Result<T>();
-        if (data != null)
-            result.setData(data);
-        return result;
-    }
-
     /**
-     * @param body    需要返回的数据
-     * @param code    响应码
-     * @param message 响应消息
-     * @param <T>     泛型，任意类型
-     * @return JSON格式的响应数据
-     */
-    public static <T> Result<T> build(T body, Integer code, String message) {
-        Result<T> result = build(body);
-        result.setCode(code);
-        result.setMessage(message);
-        return result;
-    }
-
-    /**
+     * 构建完整的响应对象（内部唯一构造入口）
+     *
      * @param body           需要返回的数据
      * @param resultCodeEnum 统一返回结果状态信息枚举类对象
      * @param <T>            泛型，任意类型
      * @return JSON格式的响应数据
      */
     public static <T> Result<T> build(T body, ResultCodeEnum resultCodeEnum) {
-        Result<T> result = build(body);
-        result.setCode(resultCodeEnum.getCode());
-        result.setMessage(resultCodeEnum.getMessage());
-        return result;
+        return new Result<>(resultCodeEnum.getCode(), resultCodeEnum.getMessage(), body);
     }
 
     /**
-     * 操作成功
+     * 构建自定义code和message的响应对象
+     *
+     * @param body    需要返回的数据
+     * @param code    响应码
+     * @param message 响应消息
+     * @param <T>     泛型，任意类型
+     * @return JSON格式的响应数据
+     */
+    public static <T> Result<T> build(T body, int code, String message) {
+        return new Result<>(code, message, body);
+    }
+
+    /**
+     * 操作成功（无数据）
      *
      * @return JSON格式的响应数据
      */
     public static <T> Result<T> ok() {
-        return Result.ok(null);
+        return build(null, ResultCodeEnum.SUCCESS);
     }
 
     /**
@@ -74,32 +70,53 @@ public class Result<T> {
     public static <T> Result<T> ok(T data) {
         return build(data, ResultCodeEnum.SUCCESS);
     }
+
     /**
-     * 操作失败
+     * 操作成功（带自定义消息，无数据）
+     *
+     * @param message 自定义消息
+     * @return JSON格式的响应数据
+     */
+    public static <T> Result<T> ok(String message) {
+        return build(null, ResultCodeEnum.SUCCESS.getCode(), message);
+    }
+
+    /**
+     * 操作失败（无数据）
      *
      * @return JSON格式的响应数据
      */
     public static <T> Result<T> fail() {
-        return Result.fail(null);
+        return build(null, ResultCodeEnum.FAIL);
     }
 
     /**
-     * 操作失败
+     * 操作失败（带数据）
      *
-     * @param data JSON格式的响应数据
+     * @param data 需要返回的数据
      * @return JSON格式的响应数据
      */
     public static <T> Result<T> fail(T data) {
         return build(data, ResultCodeEnum.FAIL);
     }
 
-    public Result<T> message(String msg) {
-        this.setMessage(msg);
-        return this;
+    /**
+     * 操作失败（带自定义消息）
+     *
+     * @param message 自定义错误消息
+     * @return JSON格式的响应数据
+     */
+    public static <T> Result<T> fail(String message) {
+        return build(null, ResultCodeEnum.FAIL.getCode(), message);
     }
 
-    public Result<T> code(Integer code) {
-        this.setCode(code);
-        return this;
+    /**
+     * 根据枚举直接构建失败响应
+     *
+     * @param resultCodeEnum 统一返回结果状态信息枚举类对象
+     * @return JSON格式的响应数据
+     */
+    public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum) {
+        return build(null, resultCodeEnum);
     }
 }

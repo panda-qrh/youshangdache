@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.common.util;
 
 /**
- * 获取当前用户信息帮助类
+ * 获取当前线程的用户信息帮助类
  */
 public class AuthContextHolder {
 

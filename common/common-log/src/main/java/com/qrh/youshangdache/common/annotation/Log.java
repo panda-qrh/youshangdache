@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.common.annotation;
 
-import com.qrh.youshangdache.common.enums.BusinessType;
-import com.qrh.youshangdache.common.enums.OperatorType;
+import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
+import com.qrh.youshangdache.model.enums.OperatorTypeEnum;
 
 import java.lang.annotation.*;
 
@@ -20,12 +20,12 @@ public @interface Log {
     /**
      * 功能
      */
-    public BusinessType businessType() default BusinessType.OTHER;
+    public BusinessTypeEnum businessType() default BusinessTypeEnum.OTHER;
 
     /**
      * 操作人类别
      */
-    public OperatorType operatorType() default OperatorType.MANAGE;
+    public OperatorTypeEnum operatorType() default OperatorTypeEnum.MANAGEMENT;
 
     /**
      * 是否保存请求的参数

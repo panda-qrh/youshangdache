@@ -23,7 +23,7 @@ public class RabbitService {
     /**
      * 发送消息
      *
-     * @param exchange   交换机
+     * @param exchange   交换机名
      * @param routingKey 路由键
      * @param message    消息内容
      */
@@ -62,15 +62,21 @@ public class RabbitService {
                 .message(message)
                 .exchange(exchange)
                 .routingKey(routingKey)
-                .delay(true)
+                .delay(true) //开启延迟消息
                 .delayTime(delayTime)
                 .build();
 
         //2.将相关消息封装到发送消息方法中，并通过消息后置处理器设置消息的延迟时间
-        rabbitTemplate.convertAndSend(exchange, routingKey, message, messagePostProcessor -> {
-            messagePostProcessor.getMessageProperties().setDelay(delayTime * 1000);
-            return messagePostProcessor;
-        }, correlationData);
+        rabbitTemplate.convertAndSend(
+                exchange,
+                routingKey,
+                message,
+                messagePostProcessor -> {
+                    messagePostProcessor.getMessageProperties().setDelay(delayTime * 1000);
+                    return messagePostProcessor;
+                },
+                correlationData
+        );
 
         //3.将相关消息存入Redis  Key：UUID  相关消息对象  10 分钟
         stringRedisTemplate.opsForValue().set(uuid, JSON.toJSONString(correlationData), 10, TimeUnit.MINUTES);

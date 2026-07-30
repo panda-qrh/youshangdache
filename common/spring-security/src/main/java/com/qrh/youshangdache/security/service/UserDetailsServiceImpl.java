@@ -1,5 +1,6 @@
 package com.qrh.youshangdache.security.service;
 
+import com.qrh.youshangdache.model.enums.AccountStatusEnum;
 import com.qrh.youshangdache.model.entity.system.SysUser;
 import com.qrh.youshangdache.security.custom.CustomUser;
 import com.qrh.youshangdache.system.client.SecurityLoginFeignClient;
@@ -27,8 +28,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("用户名不存在！");
         }
 
-        if(!"admin".equals(sysUser.getUsername()) && sysUser.getStatus().intValue() == 0) {
-            throw new RuntimeException("账号已停用");
+        if(!"admin".equals(sysUser.getUsername()) && sysUser.getStatus()== AccountStatusEnum.DISABLED) {
+            throw new RuntimeException( AccountStatusEnum.DISABLED.getMessage());
         }
         List<String> userPermsList = securityLoginFeignClient.findUserPermsList(sysUser.getId()).getData();
         sysUser.setUserPermsList(userPermsList);

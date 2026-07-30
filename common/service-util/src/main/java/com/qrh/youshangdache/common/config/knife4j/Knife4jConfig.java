@@ -50,7 +50,8 @@ public class Knife4jConfig {
                         .title("优尚打车API接口文档")
                         .version("1.0")
                         .description("优尚打车API接口文档")
-                        .contact(new Contact().name("QRH")));
+                        .contact(new Contact().name("QRH"))
+                );
     }
 
 

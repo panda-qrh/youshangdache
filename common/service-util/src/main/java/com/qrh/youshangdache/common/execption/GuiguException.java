@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class GuiguException extends RuntimeException {
 
-    private Integer code;
+    private int code;
 
     private String message;
 
@@ -19,8 +19,7 @@ public class GuiguException extends RuntimeException {
      * @param code
      * @param message
      */
-    public GuiguException(Integer code, String message) {
-        super(message);
+    public GuiguException(int code, String message) {
         this.code = code;
         this.message = message;
     }

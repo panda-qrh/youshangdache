@@ -28,7 +28,7 @@ public class FeignCustomDataDecoder implements Decoder {
         }
         if (object instanceof Result<?> result) {
             //返回状态!=200，直接抛出异常，全局异常捕获异常，接口提示
-            if (result.getCode().equals(ResultCodeEnum.SUCCESS.getCode())) {
+            if (result.getCode() != ResultCodeEnum.SUCCESS.getCode()) {
                 throw new DecodeException(result.getCode(), result.getMessage(), response.request());
             }
             //远程调用必须有返回值，具体调用中不用判断result.getData() == null，这里统一处理

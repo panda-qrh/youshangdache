@@ -20,44 +20,43 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <p>
  * 身份验证过滤器
- * </p>
  */
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private RedisTemplate redisTemplate;
 
-    private String ADMIN_LOGIN_KEY_PREFIX = "admin:login:";
-    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private static final String ADMIN_LOGIN_KEY_PREFIX = "admin:login:";
+    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
+    private static final List<String> WHITE_LIST = List.of(
+            "/securityLogin/login",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v3/**",
+            "/doc.html",
+            "/favicon.ico"
+    );
 
     public TokenAuthenticationFilter(RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        //如果是登录接口或非admin大头的直接放行
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String uri = request.getRequestURI();
-        if(antPathMatcher.match("/securityLogin/login", uri) ||
-                antPathMatcher.match("/swagger-resources/**", uri) ||
-                antPathMatcher.match("/webjars/**", uri) ||
-                antPathMatcher.match("/v3/**", uri) ||
-                antPathMatcher.match("/doc.html", uri) ||
-                antPathMatcher.match("/favicon.ico", uri)) {
+        if (isWhitelisted(uri)) {
             chain.doFilter(request, response);
             return;
         }
 
         UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
-        if(null != authentication) {
+        if (authentication != null) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             chain.doFilter(request, response);
         } else {
@@ -65,24 +64,42 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        // token置于header里
-        String token = request.getHeader("token");
-        logger.info("token:"+token);
-        if (StringUtils.hasText(token)) {
-            SysUser sysUser = (SysUser)redisTemplate.opsForValue().get(ADMIN_LOGIN_KEY_PREFIX+token);
-            logger.info("sysUser:"+JSON.toJSONString(sysUser));
-            if (null != sysUser) {
-                AuthContextHolder.setUserId(sysUser.getId());
-
-                if (null != sysUser.getUserPermsList() && sysUser.getUserPermsList().size() > 0) {
-                    List<SimpleGrantedAuthority> authorities = sysUser.getUserPermsList().stream().filter(code -> StringUtils.hasText(code.trim())).map(code -> new SimpleGrantedAuthority(code.trim())).collect(Collectors.toList());
-                    return new UsernamePasswordAuthenticationToken(sysUser.getUsername(), null, authorities);
-                } else {
-                    return new UsernamePasswordAuthenticationToken(sysUser.getUsername(), null, new ArrayList<>());
-                }
+    /**
+     * 判断uri是否在白名单中
+     * @param uri 请求URI
+     * @return true表示在白名单中，false表示不在白名单中
+     */
+    private boolean isWhitelisted(String uri) {
+        for (String pattern : WHITE_LIST) {
+            if (ANT_PATH_MATCHER.match(pattern, uri)) {
+                return true;
             }
         }
-        return null;
+        return false;
+    }
+
+    /**
+     * 获取用户的所有权限
+     * @param request
+     * @return
+     */
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        SysUser sysUser = (SysUser) redisTemplate.opsForValue().get(ADMIN_LOGIN_KEY_PREFIX + token);
+        if (sysUser == null) {
+            return null;
+        }
+
+        AuthContextHolder.setUserId(sysUser.getId());
+        List<SimpleGrantedAuthority> authorities = Collections.emptyList();
+        if (sysUser.getUserPermsList() != null && !sysUser.getUserPermsList().isEmpty()) {
+            authorities = sysUser.getUserPermsList()
+                    .stream()
+                    .filter(code -> StringUtils.hasText(code.trim()))
+                    .map(code -> new SimpleGrantedAuthority(code.trim()))
+                    .collect(Collectors.toList());
+        }
+
+        return new UsernamePasswordAuthenticationToken(sysUser.getUsername(), null, authorities);
     }
 }

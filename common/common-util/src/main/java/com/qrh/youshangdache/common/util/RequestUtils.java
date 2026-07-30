@@ -21,7 +21,7 @@ public class RequestUtils {
             StringBuilder result = new StringBuilder();
             br = request.getReader();
             for (String line; (line = br.readLine()) != null; ) {
-                if (result.length() > 0) {
+                if (!result.isEmpty()) {
                     result.append("\n");
                 }
                 result.append(line);

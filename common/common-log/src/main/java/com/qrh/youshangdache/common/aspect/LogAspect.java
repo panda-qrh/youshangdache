@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.qrh.youshangdache.common.annotation.Log;
 import com.qrh.youshangdache.common.util.IpUtil;
 import com.qrh.youshangdache.model.entity.system.SysOperLog;
+import com.qrh.youshangdache.model.enums.OperationStatusEnum;
 import com.qrh.youshangdache.system.client.SysOperLogFeignClient;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,28 +60,22 @@ public class LogAspect {
 
     protected void handleLog(final JoinPoint joinPoint, Log controllerLog, final Exception e, Object jsonResult) {
         try {
-            RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-            ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+            ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = sra.getRequest();
 
             // *========数据库日志=========*//
             SysOperLog operLog = new SysOperLog();
-            operLog.setStatus(1); //1 异常
-            // 请求的地址
-            String ip = IpUtil.getIpAddress(request);//IpUtil.getIpAddr(ServletUtils.getRequest());
-            operLog.setOperIp(ip);
-            operLog.setOperUrl(request.getRequestURI());
-
             if (e != null) {
-                operLog.setStatus(0); //0 正常
+                operLog.setStatus(OperationStatusEnum.EXCEPTION); //1 异常
                 operLog.setErrorMsg(e.getMessage());
+            } else {
+                operLog.setStatus(OperationStatusEnum.NORMAL); //0 正常
             }
-            // 设置方法名称
-            String className = joinPoint.getTarget().getClass().getName();
-            String methodName = joinPoint.getSignature().getName();
-            operLog.setMethod(className + "." + methodName + "()");
-            // 设置请求方式
-            operLog.setRequestMethod(request.getMethod());
+            operLog.setOperIp(IpUtil.getIpAddress(request)); // 请求的地址
+            operLog.setOperUrl(request.getRequestURI());
+            operLog.setMethod(joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName() + "()"); // 设置方法名称
+            operLog.setRequestMethod(request.getMethod()); // 设置请求方式
+
             // 处理设置注解上的参数
             getControllerMethodDescription(joinPoint, controllerLog, operLog, jsonResult);
             // 保存数据库
@@ -89,8 +83,7 @@ public class LogAspect {
             log.info("操作日志：{}", JSON.toJSONString(operLog));
         } catch (Exception exp) {
             // 记录本地异常日志
-            log.error("==前置通知异常==");
-            log.error("异常信息:{}", exp.getMessage());
+            log.error("==前置通知异常== \n 异常信息:{}", exp.getMessage());
             exp.printStackTrace();
         }
     }
@@ -103,21 +96,18 @@ public class LogAspect {
      * @throws Exception
      */
     public void getControllerMethodDescription(JoinPoint joinPoint, Log log, SysOperLog operLog, Object jsonResult) throws Exception {
-        // 设置action动作
-        operLog.setBusinessType(log.businessType().name());
-        // 设置标题
-        operLog.setTitle(log.title());
-        // 设置操作人类别
-        operLog.setOperatorType(log.operatorType().name());
+        operLog.setBusinessType(log.businessType()); // 设置业务类型的操作
+        operLog.setTitle(log.title());// 设置标题
+        operLog.setOperatorType(log.operatorType());// 设置操作人类别
         // 是否需要保存request，参数和值
         if (log.isSaveRequestData()) {
-            // 获取参数的信息，传入到数据库中。
-            setRequestValue(joinPoint, operLog);
+            setRequestValue(joinPoint, operLog);// 获取参数的信息，传入到数据库中。
+            // 是否需要保存response，参数和值
+            if (null != jsonResult) {
+                operLog.setJsonResult(JSON.toJSONString(jsonResult));
+            }
         }
-        // 是否需要保存response，参数和值
-        if (log.isSaveResponseData() && null != jsonResult) {
-            operLog.setJsonResult(JSON.toJSONString(jsonResult));
-        }
+
     }
 
     /**
@@ -138,19 +128,19 @@ public class LogAspect {
      * 参数拼装
      */
     private String argsArrayToString(Object[] paramsArray) {
-        String params = "";
-        if (paramsArray != null && paramsArray.length > 0) {
+        StringBuilder params = new StringBuilder();
+        if (paramsArray != null) {
             for (Object o : paramsArray) {
                 if (null != o && !isFilterObject(o)) {
                     try {
                         Object jsonObj = JSON.toJSON(o);
-                        params += jsonObj.toString() + " ";
+                        params.append(jsonObj.toString()).append(" ");
                     } catch (Exception e) {
                     }
                 }
             }
         }
-        return params.trim();
+        return params.toString().trim();
     }
 
     /**
@@ -159,24 +149,27 @@ public class LogAspect {
      * @param o 对象信息。
      * @return 如果是需要过滤的对象，则返回true；否则返回false。
      */
-    @SuppressWarnings("rawtypes")
     public boolean isFilterObject(final Object o) {
+
+        if (o instanceof MultipartFile ||
+                o instanceof HttpServletRequest ||
+                o instanceof HttpServletResponse ||
+                o instanceof BindingResult) {
+            return true;
+        }
         Class<?> clazz = o.getClass();
         if (clazz.isArray()) {
             return clazz.getComponentType().isAssignableFrom(MultipartFile.class);
-        } else if (Collection.class.isAssignableFrom(clazz)) {
-            Collection collection = (Collection) o;
-            for (Object value : collection) {
-                return value instanceof MultipartFile;
-            }
-        } else if (Map.class.isAssignableFrom(clazz)) {
-            Map map = (Map) o;
-            for (Object value : map.entrySet()) {
-                Map.Entry entry = (Map.Entry) value;
-                return entry.getValue() instanceof MultipartFile;
-            }
         }
-        return o instanceof MultipartFile || o instanceof HttpServletRequest || o instanceof HttpServletResponse
-                || o instanceof BindingResult;
+        if (Collection.class.isAssignableFrom(clazz)) {
+            return ((Collection<?>) o).stream().anyMatch(v -> v instanceof MultipartFile);
+        }
+        if (Map.class.isAssignableFrom(clazz)) {
+            return ((Map<?, ?>) o).values().stream().anyMatch(v -> v instanceof MultipartFile);
+        }
+
+        return false;
     }
 }
+
+

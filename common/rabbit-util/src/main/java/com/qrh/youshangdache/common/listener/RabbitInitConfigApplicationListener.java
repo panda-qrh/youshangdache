@@ -30,7 +30,7 @@ public class RabbitInitConfigApplicationListener implements ApplicationListener<
     private void setupCallbacks() {
 
         /**
-         * 只确认消息是否正确到达 Exchange 中,成功与否都会回调
+         * 只确认消息是否正确到达 Exchanger 中,成功与否都会回调
          *
          * @param correlation 相关数据  非消息本身业务数据
          * @param ack             应答结果
@@ -53,7 +53,12 @@ public class RabbitInitConfigApplicationListener implements ApplicationListener<
          * 消息没有正确到达队列时触发回调，如果正确到达队列不执行
          */
         this.rabbitTemplate.setReturnsCallback(returned -> {
-            log.error("Returned: {}\nreplyCode: {}\nreplyText: {}\nexchange/rk: {}/{}", returned.getMessage(), returned.getReplyCode(), returned.getReplyText(), returned.getExchange(), returned.getRoutingKey());
+            log.error("Returned: {}\n replyCode: {}\n replyText: {}\n exchange/rk: {}/{}",
+                    returned.getMessage(),
+                    returned.getReplyCode(),
+                    returned.getReplyText(),
+                    returned.getExchange(),
+                    returned.getRoutingKey());
 
             //当路由队列失败 也需要重发
             //1.构建相关数据对象

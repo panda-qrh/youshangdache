@@ -3,6 +3,7 @@ package com.qrh.youshangdache.common.config.redis;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -46,6 +47,7 @@ public class RedisConfig {
     @Bean
     @Primary
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+
         RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
@@ -67,12 +69,17 @@ public class RedisConfig {
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory factory) {
         RedisSerializer<String> redisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
 
         //解决查询缓存转换异常的问题
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        ObjectMapper om = new ObjectMapper()
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                .activateDefaultTyping(
+                        BasicPolymorphicTypeValidator.builder()
+                                .allowIfSubType(Object.class)
+                                .build(),
+                        ObjectMapper.DefaultTyping.NON_FINAL
+                );
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
         jackson2JsonRedisSerializer.setObjectMapper(om);
 
         // 配置序列化（解决乱码的问题）,过期时间600秒
@@ -82,9 +89,8 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer))
                 .disableCachingNullValues();
 
-        RedisCacheManager cacheManager = RedisCacheManager.builder(factory)
+        return RedisCacheManager.builder(factory)
                 .cacheDefaults(config)
                 .build();
-        return cacheManager;
     }
 }

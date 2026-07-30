@@ -17,17 +17,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>common-util</artifactId>
-            <version>1.0</version>
-            <scope>provided </scope>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.github.xiaoymin</groupId>-->
-<!--            <artifactId>knife4j-spring-boot-starter</artifactId>-->
-<!--            <scope>provided </scope>-->
-<!--        </dependency>-->
+
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>

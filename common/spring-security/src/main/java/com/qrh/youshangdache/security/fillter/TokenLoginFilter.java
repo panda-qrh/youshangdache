@@ -5,6 +5,7 @@ import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
 import com.qrh.youshangdache.common.util.IpUtil;
 import com.qrh.youshangdache.common.util.ResponseUtil;
+import com.qrh.youshangdache.model.enums.LoginStatusEnum;
 import com.qrh.youshangdache.model.entity.system.SysLoginLog;
 import com.qrh.youshangdache.model.vo.system.LoginVo;
 import com.qrh.youshangdache.security.custom.CustomUser;
@@ -37,10 +38,10 @@ import java.util.concurrent.TimeUnit;
 public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private RedisTemplate redisTemplate;
-    private SysLoginLogFeignClient sysLoginLogFeignClient;
+    private final SysLoginLogFeignClient sysLoginLogFeignClient;
 
-    private String ADMIN_LOGIN_KEY_PREFIX = "admin:login:";
-    private int ADMIN_LOGIN_KEY_TIMEOUT = 60 * 60 * 24 * 100;
+    private final String ADMIN_LOGIN_KEY_PREFIX = "admin:login:";
+    private final int ADMIN_LOGIN_KEY_TIMEOUT = 60 * 60 * 24 * 100;
 
     public TokenLoginFilter(AuthenticationManager authenticationManager, RedisTemplate redisTemplate, SysLoginLogFeignClient sysLoginLogFeignClient) {
         this.setAuthenticationManager(authenticationManager);
@@ -59,8 +60,7 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
      * @throws AuthenticationException
      */
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
-            throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)  throws AuthenticationException {
         try {
             LoginVo loginVo = new ObjectMapper().readValue(req.getInputStream(), LoginVo.class);
 
@@ -82,7 +82,9 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
      * @throws ServletException
      */
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
         CustomUser customUser = (CustomUser) auth.getPrincipal();
         String token = UUID.randomUUID().toString().replaceAll("-", "");
@@ -94,9 +96,9 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
         //记录日志
         SysLoginLog sysLoginLog = new SysLoginLog();
         sysLoginLog.setUsername(customUser.getUsername());
-        sysLoginLog.setStatus(1);
+        sysLoginLog.setStatus(LoginStatusEnum.SUCCESS);
         sysLoginLog.setIpaddr(IpUtil.getIpAddress(request));
-        sysLoginLog.setMsg("登录成功");
+        sysLoginLog.setMsg(LoginStatusEnum.SUCCESS.getMessage());
         sysLoginLogFeignClient.recordLoginLog(sysLoginLog);
 
         Map<String, Object> map = new HashMap<>();
@@ -113,12 +115,9 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
      * @throws ServletException
      */
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
                                               AuthenticationException e) throws IOException, ServletException {
-        if(e.getCause() instanceof RuntimeException) {
-            ResponseUtil.out(response, Result.build(null, 204, e.getMessage()));
-        } else {
-            ResponseUtil.out(response, Result.build(null, ResultCodeEnum.LOGIN_MOBILE_ERROR));
-        }
+        ResponseUtil.out(response, Result.build(null, ResultCodeEnum.LOGIN_FAILED.getCode(), e.getMessage()));
     }
 }
