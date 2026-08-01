@@ -1,11 +1,14 @@
 package com.qrh.youshangdache.model.form.rules;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FeeRuleRequest {
 
     @Schema(description = "代驾里程")

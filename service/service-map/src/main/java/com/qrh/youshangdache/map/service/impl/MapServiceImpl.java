@@ -39,26 +39,24 @@ public class MapServiceImpl implements MapService {
         //请求腾讯提供的接口，最返回需要的结果
         String url = "https://apis.map.qq.com/ws/direction/v1/driving/?from={from}&to={to}&key={key}";
         //封装传递的参数
-        Map<String, String> map = new HashMap<>();
-        map.put("from", calculateDrivingLineForm.getStartPointLatitude() + "," + calculateDrivingLineForm.getStartPointLongitude());
-        map.put("to", calculateDrivingLineForm.getEndPointLatitude() + "," + calculateDrivingLineForm.getEndPointLongitude());
-        map.put("key", key);
+        Map<String, String> map = Map.of(
+                "from", calculateDrivingLineForm.getStartPointLatitude() + "," + calculateDrivingLineForm.getStartPointLongitude(),
+                "to", calculateDrivingLineForm.getEndPointLatitude() + "," + calculateDrivingLineForm.getEndPointLongitude(),
+                "key", key
+        );
         //使用restTemplate调用
         JSONObject result = restTemplate.getForObject(url, JSONObject.class, map);
         //返回处理结果
-        int status = result.getIntValue("status");
-        if (status != 0) {
+
+        if (result == null || result.getIntValue("status") != 0) {
             throw new GuiguException(ResultCodeEnum.MAP_SERVICE_CALL_FAILED);
         }
         //返回获取路线信息
-        JSONObject route = result.getJSONObject("result")
-                .getJSONArray("routes")
-                .getJSONObject(0);
+        JSONObject route = result.getJSONObject("result").getJSONArray("routes").getJSONObject(0);
         DrivingLineVo drivingLineVo = new DrivingLineVo();
         drivingLineVo.setDuration(route.getBigDecimal("duration"));
-        drivingLineVo.setDistance(route.getBigDecimal("distance")
-                .divide(new BigDecimal("1000"))
-                .setScale(2, RoundingMode.UP)
+        drivingLineVo.setDistance(
+                route.getBigDecimal("distance").divide(new BigDecimal("1000"), 2, RoundingMode.UP)
         );
         //路线
         drivingLineVo.setPolyline(route.getJSONArray("polyline"));

@@ -3,6 +3,7 @@ package com.qrh.youshangdache.model.entity.order;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -21,7 +22,7 @@ public class OrderStatusLog extends BaseEntity {
 
     @Schema(description = "订单状态")
 	@TableField("order_status")
-	private Integer orderStatus;
+	private OrderStatusEnum orderStatus;
 
     @Schema(description = "操作时间")
 	@TableField("operate_time")

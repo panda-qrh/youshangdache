@@ -12,6 +12,7 @@ import com.qrh.youshangdache.map.client.MapFeignClient;
 import com.qrh.youshangdache.map.client.WxPayFeignClient;
 import com.qrh.youshangdache.model.entity.order.OrderInfo;
 import com.qrh.youshangdache.model.enums.OrderStatusEnum;
+import com.qrh.youshangdache.model.enums.PayWayEnum;
 import com.qrh.youshangdache.model.form.coupon.UseCouponForm;
 import com.qrh.youshangdache.model.form.customer.ExpectOrderForm;
 import com.qrh.youshangdache.model.form.customer.SubmitOrderForm;
@@ -77,8 +78,8 @@ public class OrderServiceImpl implements OrderService {
         //1.获取订单支付相关信息
         OrderPayVo orderPayVo = orderInfoFeignClient.getOrderPayVo(createWxPaymentForm.getOrderNo(), createWxPaymentForm.getCustomerId()).getData();
         //判断是否在未支付状态
-        if (orderPayVo.getStatus().intValue() != OrderStatusEnum.ORDER_UNPAID.getCode().intValue()) {
-            throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
+        if (orderPayVo.getStatus().equals(OrderStatusEnum.ORDER_UNPAID)) {
+            throw new GuiguException(ResultCodeEnum.EXIST_UNPAID_ORDER);
         }
 
         //2.获取乘客微信openId
@@ -113,14 +114,14 @@ public class OrderServiceImpl implements OrderService {
         paymentInfoForm.setOrderNo(orderPayVo.getOrderNo());
         paymentInfoForm.setAmount(payAmount);
         paymentInfoForm.setContent(orderPayVo.getContent());
-        paymentInfoForm.setPayWay(1);
-        WxPrepayVo wxPrepayVo = wxPayFeignClient.createWxPayment(paymentInfoForm).getData();
-        return wxPrepayVo;
+        paymentInfoForm.setPayWay(PayWayEnum.WECHAT);
+        return wxPayFeignClient.createWxPayment(paymentInfoForm).getData();
     }
+
     /**
      * 获取乘客订单分页列表
      *
-     * @param pageParam 分页参数对象
+     * @param pageParam  分页参数对象
      * @param customerId 用户id
      * @return 订单分页
      */
@@ -133,6 +134,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId) {
         return locationFeignClient.getOrderServiceLastLocation(orderId).getData();
     }
+
     /**
      * 计算最佳驾驶路线
      *
@@ -143,6 +145,7 @@ public class OrderServiceImpl implements OrderService {
     public DrivingLineVo calculateDriverLine(CalculateDrivingLineForm calculateDrivingLineForm) {
         return mapFeignClient.calculateDrivingLine(calculateDrivingLineForm).getData();
     }
+
     /**
      * 司机赶往代驾起始点，更新订单经纬度位置
      *
@@ -196,7 +199,7 @@ public class OrderServiceImpl implements OrderService {
             driverInfoVo = driverInfoFeignClient.getDriverInfo(driverId).getData();
         }
         OrderBillVo orderBillVo = null;
-        if (orderInfo.getStatus() >= OrderStatusEnum.ORDER_UNPAID.getCode()) {
+        if (orderInfo.getStatus().compareTo(OrderStatusEnum.ORDER_UNPAID) >= 0) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId).getData();
         }
         OrderInfoVo orderInfoVo = new OrderInfoVo();

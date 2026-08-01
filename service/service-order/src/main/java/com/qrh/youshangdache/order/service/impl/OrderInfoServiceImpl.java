@@ -587,7 +587,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderInfo orderInfo = new OrderInfo();
         BeanUtils.copyProperties(orderInfoForm, orderInfo);
         String orderNo = UUID.randomUUID().toString().replaceAll("-", "");
-        orderInfo.setStatus(OrderStatusEnum.WAITING_ACCEPT.getCode());
+        orderInfo.setStatus(OrderStatusEnum.WAITING_ACCEPT);
         orderInfo.setOrderNo(orderNo);
         orderInfoMapper.insert(orderInfo);
         //生成订单之后，发送到延迟队列
@@ -632,7 +632,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
     }
 
-    private void log(Long orderId, Integer status) {
+    /**
+     * 记录乘客下单的日志
+     *
+     * @param orderId 订单id
+     * @param status  订单状态
+     */
+    private void log(Long orderId, OrderStatusEnum status) {
         OrderStatusLog orderStatusLog = new OrderStatusLog();
         orderStatusLog.setOrderId(orderId);
         orderStatusLog.setOrderStatus(status);

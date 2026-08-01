@@ -1,5 +1,6 @@
 package com.qrh.youshangdache.model.form.payment;
 
+import com.qrh.youshangdache.model.enums.PayWayEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -18,7 +19,7 @@ public class PaymentInfoForm {
     private String orderNo;
 
     @Schema(description = "付款方式：1-微信")
-    private Integer payWay;
+    private PayWayEnum payWay;
 
     @Schema(description = "支付金额")
     private BigDecimal amount;
