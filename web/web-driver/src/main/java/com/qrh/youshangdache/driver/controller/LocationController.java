@@ -38,10 +38,11 @@ public class LocationController {
     @Operation(summary = "开启接单服务：更新司机经纬度位置")
     @Login
     @PostMapping("/updateDriverLocation")
-    public Result<Boolean> updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
+    public Result<Void> updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
         Long driverId = AuthContextHolder.getUserId();
         updateDriverLocationForm.setDriverId(driverId);
-        return Result.ok(locationService.updateDriverLocation(updateDriverLocationForm));
+        locationService.updateDriverLocation(updateDriverLocationForm);
+        return Result.ok();
     }
     /**
      * 司机赶往代驾起始点，更新订单地址到缓存

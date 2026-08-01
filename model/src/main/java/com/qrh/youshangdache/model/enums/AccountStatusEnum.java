@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -13,6 +15,16 @@ public enum AccountStatusEnum {
     @EnumValue
     private int code;
     private String message;
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static AccountStatusEnum fromCode(int code) {
+        return of(code);
+    }
 
     AccountStatusEnum(int code, String message) {
         this.code = code;

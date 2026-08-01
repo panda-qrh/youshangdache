@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,4 +19,24 @@ public enum PayWayEnum {
     @EnumValue
     private int code;
     private String message;
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static PayWayEnum fromCode(int code) {
+        for (PayWayEnum e : values()) {
+            if (e.code == code) return e;
+        }
+        throw new IllegalArgumentException("无效的支付方式码: " + code);
+    }
+
+    public static PayWayEnum of(int code) {
+        for (PayWayEnum e : values()) {
+            if (e.code == code) return e;
+        }
+        return null;
+    }
 }

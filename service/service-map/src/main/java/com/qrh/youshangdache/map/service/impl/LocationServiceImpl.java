@@ -35,7 +35,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 @Slf4j
@@ -199,35 +198,23 @@ public class LocationServiceImpl implements LocationService {
                 .includeCoordinates()
                 .sortDescending();
         GeoResults<RedisGeoCommands.GeoLocation<String>> results = stringRedisTemplate.opsForGeo().radius(RedisConstant.DRIVER_GEO_LOCATION, circle, args);
+        if (results==null){return null;}
         List<GeoResult<RedisGeoCommands.GeoLocation<String>>> content = results.getContent();
         //3.返回计算后的信息
         List<NearByDriverVo> list = new ArrayList();
         if (!content.isEmpty()) {
-            Iterator<GeoResult<RedisGeoCommands.GeoLocation<String>>> iterator = content.iterator();
-            while (iterator.hasNext()) {
-                GeoResult<RedisGeoCommands.GeoLocation<String>> item = iterator.next();
-
-                //司机id
+            for (GeoResult<RedisGeoCommands.GeoLocation<String>> item : content) {
                 Long driverId = Long.parseLong(item.getContent().getName());
-                //当前距离
                 BigDecimal currentDistance = new BigDecimal(item.getDistance().getValue()).setScale(2, RoundingMode.HALF_UP);
-
-                //获取司机接单设置参数
                 DriverSet driverSet = driverInfoFeignClient.getDriverSettingInfo(driverId).getData();
-                //接单里程判断，acceptDistance==0：不限制，
-                if (driverSet.getAcceptDistance().doubleValue() != 0 &&
-                        driverSet.getAcceptDistance().subtract(currentDistance).doubleValue() < 0) {
+                if (!driverSet.getAcceptDistance().equals(BigDecimal.ZERO)
+                        && driverSet.getAcceptDistance().compareTo(currentDistance) < 0) {
                     continue;
                 }
-                //订单里程判断，orderDistance==0：不限制
                 if (driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION &&
-                        driverSet.getOrderDistance()
-                                .subtract(searchNearByDriverForm.getMileageDistance())
-                                .doubleValue() < 0) {
+                        driverSet.getOrderDistance().compareTo(searchNearByDriverForm.getMileageDistance()) < 0) {
                     continue;
                 }
-
-                //满足条件的附近司机信息
                 NearByDriverVo nearByDriverVo = new NearByDriverVo();
                 nearByDriverVo.setDriverId(driverId);
                 nearByDriverVo.setDistance(currentDistance);
@@ -249,12 +236,10 @@ public class LocationServiceImpl implements LocationService {
      * @return true
      */
     @Override
-    public Boolean updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm) {
-        //     Redis GEO 主要用于存储地理位置信息，并对存储的信息进行相关操作，该功能在 Redis 3.2 版本新增。
-        //    后续用在，乘客下单后寻找5公里范围内开启接单服务的司机，通过Redis GEO进行计算
+    public void updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm) {
         Point point = new Point(updateDriverLocationForm.getLongitude().doubleValue(), updateDriverLocationForm.getLatitude().doubleValue());
-        stringRedisTemplate.opsForGeo().add(RedisConstant.DRIVER_GEO_LOCATION, point, updateDriverLocationForm.getDriverId().toString());
-        return true;
+        stringRedisTemplate.opsForGeo()
+                .add(RedisConstant.DRIVER_GEO_LOCATION, point, updateDriverLocationForm.getDriverId().toString());
     }
 
     /**
@@ -268,8 +253,7 @@ public class LocationServiceImpl implements LocationService {
      * @return true
      */
     @Override
-    public Boolean removeDriverLocation(Long driverId) {
+    public void removeDriverLocation(Long driverId) {
         stringRedisTemplate.opsForGeo().remove(RedisConstant.DRIVER_GEO_LOCATION, driverId.toString());
-        return true;
     }
 }

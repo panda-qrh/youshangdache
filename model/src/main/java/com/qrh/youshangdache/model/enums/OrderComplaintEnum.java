@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,6 +28,16 @@ public enum OrderComplaintEnum {
      * 订单申述状态代号对应的描述
      */
     private final String message;
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static OrderComplaintEnum fromCode(int code) {
+        return of(code);
+    }
 
     public static OrderComplaintEnum of(int code) {
         for (OrderComplaintEnum e : values()) {

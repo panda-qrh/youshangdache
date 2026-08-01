@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,6 +18,16 @@ public enum TradeTypeEnum {
     @EnumValue
     private final int code;
     private final String message;
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static TradeTypeEnum fromCode(int code) {
+        return of(code);
+    }
 
     public static TradeTypeEnum of(int code) {
         for (TradeTypeEnum e : values()) {

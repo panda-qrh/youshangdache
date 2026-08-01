@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +25,16 @@ public enum CouponTypeEnum {
      * 优惠券类型的描述（值）
      */
     private final String type;
+
+    @JsonValue
+    public Integer getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static CouponTypeEnum fromCode(int code) {
+        return of(code);
+    }
 
     public static CouponTypeEnum of(int code) {
         for (CouponTypeEnum e : values()) {

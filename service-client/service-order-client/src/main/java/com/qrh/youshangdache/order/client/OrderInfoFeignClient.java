@@ -3,6 +3,7 @@ package com.qrh.youshangdache.order.client;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.order.OrderInfo;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import com.qrh.youshangdache.model.form.order.OrderInfoForm;
 import com.qrh.youshangdache.model.form.order.StartDriveForm;
 import com.qrh.youshangdache.model.form.order.UpdateOrderBillForm;
@@ -36,7 +37,7 @@ public interface OrderInfoFeignClient {
      * @return 订单状态代号
      */
     @GetMapping("/getOrderStatus/{orderId}")
-    Result<Integer> getOrderStatus(@PathVariable("orderId") Long orderId);
+    Result<OrderStatusEnum> getOrderStatus(@PathVariable("orderId") Long orderId);
 
     /**
      * 乘客如果已经下过单了，而且这个订单在执行中，没有结束，

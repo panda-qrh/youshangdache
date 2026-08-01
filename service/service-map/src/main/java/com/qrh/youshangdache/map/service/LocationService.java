@@ -18,7 +18,7 @@ public interface LocationService {
      * @param updateDriverLocationForm 更新司机位置对象
      * @return true
      */
-    Boolean updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm);
+    void updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm);
 
     /**
      * 关闭接单服务：删除司机经纬度位置
@@ -26,7 +26,7 @@ public interface LocationService {
      * @param driverId 司机id
      * @return true
      */
-    Boolean removeDriverLocation(Long driverId);
+    void removeDriverLocation(Long driverId);
 
     /**
      * 司机端的小程序开启接单服务后，开始实时上传司机的定位信息到redis的GEO缓存，

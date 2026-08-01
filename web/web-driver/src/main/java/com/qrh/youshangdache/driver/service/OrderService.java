@@ -27,7 +27,7 @@ public interface OrderService {
      * @param orderId 订单id
      * @return 订单状态代号
      */
-    Integer getOrderStatus(Long orderId);
+    OrderStatusEnum getOrderStatus(Long orderId);
 
     /**
      * 查询司机的最新订单数据

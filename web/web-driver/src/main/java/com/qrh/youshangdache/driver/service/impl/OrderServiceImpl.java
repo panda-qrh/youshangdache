@@ -347,7 +347,7 @@ public class OrderServiceImpl implements OrderService {
      * @return 订单状态代号
      */
     @Override
-    public Integer getOrderStatus(Long orderId) {
+    public OrderStatusEnum getOrderStatus(Long orderId) {
         return orderInfoFeignClient.getOrderStatus(orderId).getData();
     }
 

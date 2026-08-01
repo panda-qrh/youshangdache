@@ -55,15 +55,12 @@ public class LocationServiceImpl implements LocationService {
      * @return true
      */
     @Override
-    public Boolean updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm) {
-        //根据司机id获取司机个性化设置位置
+    public void updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm) {
         Long driverId = updateDriverLocationForm.getDriverId();
         DriverSet driverSet = driverInfoFeignClient.getDriverSettingInfo(driverId).getData();
-        //判断：如果司机开始接单，更新位置信息
-        if (driverSet.getServiceStatus().equals(DriverServiceStatusEnum.DRIVER_START_SERVICE.getServiceStatus())) {
-            return locationFeignClient.updateDriverLocation(updateDriverLocationForm).getData();
+        if (driverSet.getServiceStatus()==DriverServiceStatusEnum.DRIVER_START_SERVICE) {
+            locationFeignClient.updateDriverLocation(updateDriverLocationForm);
         } else {
-            //没有接单
             throw new GuiguException(ResultCodeEnum.DRIVER_NOT_START_SERVICE);
         }
     }

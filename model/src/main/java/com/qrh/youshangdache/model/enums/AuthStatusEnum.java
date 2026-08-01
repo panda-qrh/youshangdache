@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +25,16 @@ public enum AuthStatusEnum {
      * 状态代号对应的描述
      */
     private final String message;
+
+    @JsonValue
+    public Integer getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static AuthStatusEnum fromCode(int code) {
+        return of(code);
+    }
 
     /**
      * 根据code匹配枚举

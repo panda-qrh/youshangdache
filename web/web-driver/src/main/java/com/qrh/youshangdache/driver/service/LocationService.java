@@ -18,7 +18,7 @@ public interface LocationService {
      * @param updateDriverLocationForm 更新司机位置对象
      * @return true
      */
-    Boolean updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm);
+    void updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm);
     /**
      * 司机赶往代驾起始点，更新订单地址到缓存
      *

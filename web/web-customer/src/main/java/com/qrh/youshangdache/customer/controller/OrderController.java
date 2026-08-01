@@ -5,6 +5,7 @@ import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.util.AuthContextHolder;
 import com.qrh.youshangdache.customer.service.OrderService;
 import com.qrh.youshangdache.model.entity.order.OrderInfo;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import com.qrh.youshangdache.model.form.customer.ExpectOrderForm;
 import com.qrh.youshangdache.model.form.customer.SubmitOrderForm;
 import com.qrh.youshangdache.model.form.map.CalculateDrivingLineForm;
@@ -73,7 +74,7 @@ public class OrderController {
     @Operation(summary = "查询订单状态")
     @Login
     @GetMapping("/getOrderStatus/{orderId}")
-    public Result<Integer> getOrderStatus(@PathVariable Long orderId) {
+    public Result<OrderStatusEnum> getOrderStatus(@PathVariable Long orderId) {
         return Result.ok(orderService.getOrderStatus(orderId));
     }
 

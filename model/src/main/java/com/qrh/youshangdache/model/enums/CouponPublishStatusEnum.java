@@ -1,6 +1,8 @@
 package com.qrh.youshangdache.model.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +25,16 @@ public enum CouponPublishStatusEnum {
      * 优惠券发布的状态描述（值）
      */
     private final String message;
+
+    @JsonValue
+    public int getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static CouponPublishStatusEnum fromCode(int code) {
+        return of(code);
+    }
 
     public static CouponPublishStatusEnum of(int code) {
         for (CouponPublishStatusEnum e : values()) {

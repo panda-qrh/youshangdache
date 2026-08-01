@@ -35,13 +35,14 @@ public class DriverServiceImpl implements DriverService {
 
     /**
      * 司机接单成功后，关闭接单功能
+     *
      * @param driverId 司机id
      * @return true
      */
     @Override
     public Boolean stopService(Long driverId) {
         //更新司机的接单状态
-        driverInfoFeignClient.updateServiceStatus(driverId, DriverServiceStatusEnum.DRIVER_NOT_SERVICE.getServiceStatus());
+        driverInfoFeignClient.updateServiceStatus(driverId, DriverServiceStatusEnum.DRIVER_NOT_SERVICE.getCode());
         //删除司机的位置信息
         locationFeignClient.removeDriverLocation(driverId);
         //清空司机临时队列数据
@@ -51,9 +52,10 @@ public class DriverServiceImpl implements DriverService {
 
     /**
      * 更新司机的接单状态为开启接单状态
-     *<p>
-     *     司机完成了当日人脸认证后，开启接单，然后删除司机在redis中的位置，及清空司机的临时订单列表数据
-     *</p>
+     * <p>
+     * 司机完成了当日人脸认证后，开启接单，然后删除司机在redis中的位置，及清空司机的临时订单列表数据
+     * </p>
+     *
      * @param driverId 司机id
      * @return true
      */
@@ -61,7 +63,7 @@ public class DriverServiceImpl implements DriverService {
     public Boolean startService(Long driverId) {
         //判断是否完成了验证
         DriverLoginVo driverLoginVo = driverInfoFeignClient.getDriverLoginInfo(driverId).getData();
-        if (!driverLoginVo.getAuthStatus().equals(AuthStatusEnum.AUTHENTICATION_PASSED.getCode())) {
+        if (driverLoginVo.getAuthStatus() != AuthStatusEnum.AUTHENTICATION_PASSED) {
             throw new GuiguException(ResultCodeEnum.DRIVER_NOT_AUTH);
         }
         //判断当日是否人脸识别
@@ -70,7 +72,7 @@ public class DriverServiceImpl implements DriverService {
             throw new GuiguException(ResultCodeEnum.DRIVER_NOT_FACIAL_RECOGNITION);
         }
         //更新司机服务状态
-        driverInfoFeignClient.updateServiceStatus(driverId, DriverServiceStatusEnum.DRIVER_START_SERVICE.getServiceStatus());
+        driverInfoFeignClient.updateServiceStatus(driverId, DriverServiceStatusEnum.DRIVER_START_SERVICE.getCode());
         //删除redis的司机的位置信息
         locationFeignClient.removeDriverLocation(driverId);
         //清空司机临时订单数据
@@ -83,6 +85,7 @@ public class DriverServiceImpl implements DriverService {
     public Boolean verifyDriverFace(DriverFaceModelForm driverFaceModelForm) {
         return driverInfoFeignClient.verifyDriverFace(driverFaceModelForm).getData();
     }
+
     /**
      * 判断司机当日是否进行过人脸识别
      *
@@ -110,6 +113,7 @@ public class DriverServiceImpl implements DriverService {
 
     /**
      * 司机端-获取登录后的司机信息
+     *
      * @param driverId 司机id
      * @return 司机登录后的司机基本信息
      */
@@ -120,6 +124,7 @@ public class DriverServiceImpl implements DriverService {
 
     /**
      * 司机端-小程序授权登录
+     *
      * @param code 微信临时票据
      * @return token
      */

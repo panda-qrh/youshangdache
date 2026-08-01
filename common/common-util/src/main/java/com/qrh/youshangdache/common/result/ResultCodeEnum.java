@@ -80,7 +80,8 @@ public enum ResultCodeEnum {
     IMAGE_AUDITION_FAIL(60003, "图片审核不通过"),
     FILE_UPLOAD_FAILED(60004, "上传失败"),
     WX_CREATE_ERROR(60005, "微信创建失败"),
-    XXL_JOB_ERROR(60006, "任务调度失败");
+    XXL_JOB_ERROR(60006, "任务调度失败"),
+    DELAY_MESSAGE_FAIL(60007, "延迟消息发送失败");
 
     private final int code;
     private final String message;

@@ -90,8 +90,8 @@ public class NewOrderServiceImpl implements NewOrderService {
         NewOrderTaskVo newOrderTaskVo = JSONObject.parseObject(orderJob.getParameter(), NewOrderTaskVo.class);
 
         //查询订单状态，如果该订单还在接单状态，继续执行；如果不在接单状态，则停止定时调度
-        Integer orderStatus = orderInfoFeignClient.getOrderStatus(newOrderTaskVo.getOrderId()).getData();
-        if (!orderStatus.equals(OrderStatusEnum.WAITING_ACCEPT.getCode())) {
+        OrderStatusEnum orderStatus = orderInfoFeignClient.getOrderStatus(newOrderTaskVo.getOrderId()).getData();
+        if (orderStatus != OrderStatusEnum.WAITING_ACCEPT) {
             xxlJobClient.stopJob(jobId);
             log.info("停止任务调度: {}", JSON.toJSONString(newOrderTaskVo));
             return true;

@@ -1,6 +1,7 @@
 package com.qrh.youshangdache.order.service;
 
 import com.qrh.youshangdache.model.entity.order.OrderInfo;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import com.qrh.youshangdache.model.form.order.OrderInfoForm;
 import com.qrh.youshangdache.model.form.order.StartDriveForm;
 import com.qrh.youshangdache.model.form.order.UpdateOrderBillForm;
@@ -27,7 +28,7 @@ public interface OrderInfoService extends IService<OrderInfo> {
      * @param orderId 订单id
      * @return 订单状态代号
      */
-    Integer getOrderStatus(Long orderId);
+    OrderStatusEnum getOrderStatus(Long orderId);
     /**
      * 司机抢单
      *

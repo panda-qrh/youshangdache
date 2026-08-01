@@ -28,7 +28,7 @@ public interface LocationFeignClient {
      * @return true
      */
     @PostMapping("/map/location/updateDriverLocation")
-    Result<Boolean> updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm);
+    Result<Void> updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm);
 
     /**
      * 接单结束，关闭接单服务：删除司机经纬度位置
@@ -41,7 +41,7 @@ public interface LocationFeignClient {
      * @return true
      */
     @DeleteMapping("/map/location/removeDriverLocation/{driverId}")
-    Result<Boolean> removeDriverLocation(@PathVariable("driverId") Long driverId);
+    Result<Void> removeDriverLocation(@PathVariable("driverId") Long driverId);
 
     /**
      * 司机端的小程序开启接单服务后，开始实时上传司机的定位信息到redis的GEO缓存，

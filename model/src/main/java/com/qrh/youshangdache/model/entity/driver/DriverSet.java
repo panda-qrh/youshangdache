@@ -37,6 +37,6 @@ public class DriverSet extends BaseEntity {
 
     @Schema(description = "是否自动接单")
 	@TableField("is_auto_accept")
-	private Boolean isAutoAccept;
+	private Boolean isAutoAccept=Boolean.FALSE;
 
 }

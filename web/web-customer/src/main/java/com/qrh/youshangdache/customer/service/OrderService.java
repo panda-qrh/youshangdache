@@ -1,6 +1,7 @@
 package com.qrh.youshangdache.customer.service;
 
 import com.qrh.youshangdache.model.entity.order.OrderInfo;
+import com.qrh.youshangdache.model.enums.OrderStatusEnum;
 import com.qrh.youshangdache.model.form.customer.ExpectOrderForm;
 import com.qrh.youshangdache.model.form.customer.SubmitOrderForm;
 import com.qrh.youshangdache.model.form.map.CalculateDrivingLineForm;
@@ -29,7 +30,7 @@ public interface OrderService {
      * @param orderId 订单id
      * @return 订单状态代号
      */
-    Integer getOrderStatus(Long orderId);
+    OrderStatusEnum getOrderStatus(Long orderId);
     /**
      * 获取执行中的订单
      * @param orderId 订单id

@@ -48,7 +48,7 @@ public class OrderController {
     @Operation(summary = "查询订单状态")
     @Login
     @GetMapping("/getOrderStatus/{orderId}")
-    public Result<Integer> getOrderStatus(@PathVariable Long orderId) {
+    public Result<OrderStatusEnum> getOrderStatus(@PathVariable Long orderId) {
         return Result.ok(orderService.getOrderStatus(orderId));
     }
 
