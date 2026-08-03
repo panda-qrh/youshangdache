@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.qrh.youshangdache</groupId>
-			<artifactId>spring-security</artifactId>
+			<artifactId>service-util</artifactId>
 			<version>1.0</version>
 		</dependency>
 	</dependencies>

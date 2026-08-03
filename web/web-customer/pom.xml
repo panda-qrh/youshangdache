@@ -18,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.qrh.youshangdache</groupId>
-			<artifactId>rabbit-util</artifactId>
+			<artifactId>service-util</artifactId>
 			<version>1.0</version>
 		</dependency>
 	</dependencies>

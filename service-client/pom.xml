@@ -28,7 +28,7 @@
     <dependencies>
         <dependency>
             <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>common-util</artifactId>
+            <artifactId>service-util</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
