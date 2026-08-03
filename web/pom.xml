@@ -27,8 +27,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.qrh.youshangdache</groupId>
-		<dependency>
-			<groupId>com.qrh.youshangdache</groupId>
 			<artifactId>service-system-client</artifactId>
 			<version>1.0</version>
 		</dependency>

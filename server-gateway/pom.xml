@@ -17,8 +17,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.qrh.youshangdache</groupId>
-		<dependency>
-			<groupId>com.qrh.youshangdache</groupId>
 			<artifactId>model</artifactId>
 			<version>1.0</version>
 		</dependency>
