@@ -6,7 +6,6 @@ import com.qrh.youshangdache.model.entity.order.OrderMonitorRecord;
 import com.qrh.youshangdache.order.service.OrderMonitorService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

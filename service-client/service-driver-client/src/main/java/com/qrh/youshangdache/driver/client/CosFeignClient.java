@@ -2,7 +2,6 @@ package com.qrh.youshangdache.driver.client;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.vo.driver.CosUploadVo;
-import com.qrh.youshangdache.model.vo.driver.IdCardOcrVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;

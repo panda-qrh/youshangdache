@@ -2,12 +2,12 @@ package com.qrh.youshangdache.payment.service.impl;
 
 import com.alibaba.fastjson.JSON;
 
-import com.qrh.youshangdache.common.constant.ExchangeConst;
-import com.qrh.youshangdache.common.constant.RoutingConst;
+import com.qrh.youshangdache.common.mq.constant.ExchangeConst;
+import com.qrh.youshangdache.common.mq.constant.RoutingConst;
 import com.qrh.youshangdache.common.constant.SystemConstant;
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
-import com.qrh.youshangdache.common.service.RabbitService;
+import com.qrh.youshangdache.common.mq.service.RabbitService;
 import com.qrh.youshangdache.common.util.RequestUtils;
 import com.qrh.youshangdache.driver.client.DriverAccountFeignClient;
 import com.qrh.youshangdache.model.entity.payment.PaymentInfo;

@@ -1,9 +1,9 @@
 package com.qrh.youshangdache.payment.receiver;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.qrh.youshangdache.common.constant.ExchangeConst;
-import com.qrh.youshangdache.common.constant.QueueConst;
-import com.qrh.youshangdache.common.constant.RoutingConst;
+import com.qrh.youshangdache.common.mq.constant.ExchangeConst;
+import com.qrh.youshangdache.common.mq.constant.QueueConst;
+import com.qrh.youshangdache.common.mq.constant.RoutingConst;
 import com.qrh.youshangdache.model.form.payment.ProfitsharingForm;
 import com.qrh.youshangdache.payment.service.WxPayService;
 import com.qrh.youshangdache.payment.service.WxProfitsharingService;

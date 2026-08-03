@@ -1,7 +1,6 @@
 package com.qrh.youshangdache.customer.client;
 
 import com.qrh.youshangdache.common.result.Result;
-import com.qrh.youshangdache.model.entity.customer.CustomerInfo;
 import com.qrh.youshangdache.model.form.customer.UpdateWxPhoneForm;
 import com.qrh.youshangdache.model.vo.customer.CustomerLoginVo;
 import org.springframework.cloud.openfeign.FeignClient;

@@ -1,14 +1,12 @@
 package com.qrh.youshangdache.coupon.client;
 
 import com.qrh.youshangdache.common.result.Result;
-import com.qrh.youshangdache.model.entity.coupon.CouponInfo;
 import com.qrh.youshangdache.model.form.coupon.UseCouponForm;
 import com.qrh.youshangdache.model.vo.base.PageVo;
 import com.qrh.youshangdache.model.vo.coupon.AvailableCouponVo;
 import com.qrh.youshangdache.model.vo.coupon.NoReceiveCouponVo;
 import com.qrh.youshangdache.model.vo.coupon.NoUseCouponVo;
 import com.qrh.youshangdache.model.vo.coupon.UsedCouponVo;
-import feign.Param;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

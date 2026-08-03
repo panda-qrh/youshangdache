@@ -1,15 +1,14 @@
 package com.qrh.youshangdache.order.reveiver;
 
-import com.qrh.youshangdache.common.constant.ExchangeConst;
-import com.qrh.youshangdache.common.constant.QueueConst;
-import com.qrh.youshangdache.common.constant.RoutingConst;
+import com.qrh.youshangdache.common.mq.constant.ExchangeConst;
+import com.qrh.youshangdache.common.mq.constant.QueueConst;
+import com.qrh.youshangdache.common.mq.constant.RoutingConst;
 import com.qrh.youshangdache.order.service.OrderInfoService;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

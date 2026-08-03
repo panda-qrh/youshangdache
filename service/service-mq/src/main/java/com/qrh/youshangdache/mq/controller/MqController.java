@@ -1,7 +1,7 @@
 package com.qrh.youshangdache.mq.controller;
 
 import com.qrh.youshangdache.common.result.Result;
-import com.qrh.youshangdache.common.service.RabbitService;
+import com.qrh.youshangdache.common.mq.service.RabbitService;
 import com.qrh.youshangdache.mq.config.DeadLetterMqConfig;
 import com.qrh.youshangdache.mq.config.DelayedMqConfig;
 import jakarta.annotation.Resource;

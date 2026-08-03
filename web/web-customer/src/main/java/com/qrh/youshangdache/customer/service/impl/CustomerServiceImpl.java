@@ -1,23 +1,16 @@
 package com.qrh.youshangdache.customer.service.impl;
 
 import com.qrh.youshangdache.common.constant.RedisConstant;
-import com.qrh.youshangdache.common.execption.GuiguException;
-import com.qrh.youshangdache.common.result.Result;
-import com.qrh.youshangdache.common.result.ResultCodeEnum;
 import com.qrh.youshangdache.customer.client.CustomerInfoFeignClient;
 import com.qrh.youshangdache.customer.service.CustomerService;
-import com.qrh.youshangdache.model.entity.customer.CustomerInfo;
 import com.qrh.youshangdache.model.form.customer.UpdateWxPhoneForm;
-import com.qrh.youshangdache.model.vo.customer.CustomerInfoVo;
 import com.qrh.youshangdache.model.vo.customer.CustomerLoginVo;
 import com.qrh.youshangdache.model.vo.order.CurrentOrderInfoVo;
 import com.qrh.youshangdache.order.client.OrderInfoFeignClient;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.customer.controller;
 
-import com.qrh.youshangdache.common.login.Login;
+import com.qrh.youshangdache.common.annotation.Login;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.util.AuthContextHolder;
 import com.qrh.youshangdache.customer.service.OrderService;

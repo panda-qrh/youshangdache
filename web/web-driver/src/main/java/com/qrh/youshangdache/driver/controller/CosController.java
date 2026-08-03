@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.login.Login;
+import com.qrh.youshangdache.common.annotation.Login;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.CosService;
 import com.qrh.youshangdache.model.vo.driver.CosUploadVo;

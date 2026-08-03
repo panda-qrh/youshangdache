@@ -10,7 +10,6 @@ import com.qrh.youshangdache.driver.config.TencentCloudProperties;
 import com.qrh.youshangdache.driver.mapper.*;
 import com.qrh.youshangdache.driver.service.CosService;
 import com.qrh.youshangdache.driver.service.DriverInfoService;
-import com.qrh.youshangdache.model.entity.customer.CustomerLoginLog;
 import com.qrh.youshangdache.model.entity.driver.*;
 import com.qrh.youshangdache.model.enums.AccountStatusEnum;
 import com.qrh.youshangdache.model.enums.DriverServiceStatusEnum;
