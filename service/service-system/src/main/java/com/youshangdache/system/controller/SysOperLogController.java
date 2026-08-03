@@ -28,7 +28,7 @@ public class SysOperLogController {
 
 	@Operation(summary = "获取分页列表")
 	@PostMapping("findPage/{page}/{limit}")
-	public void findPage(
+	public PageVo<SysOperLog> findPage(
 		@Parameter(name = "page", description = "当前页码", required = true)
 		@PathVariable Long page,
 	

@@ -1,4 +1,4 @@
-package com.youshangdache.model.feign;
+package com.youshangdache.system;
 
 import com.youshangdache.model.entity.system.SysLoginLog;
 import com.youshangdache.model.query.system.SysLoginLogQuery;

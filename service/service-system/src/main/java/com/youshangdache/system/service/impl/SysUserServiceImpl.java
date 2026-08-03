@@ -1,5 +1,6 @@
 package com.youshangdache.system.service.impl;
 
+import com.youshangdache.model.enums.AccountStatusEnum;
 import com.youshangdache.model.entity.system.SysUser;
 import com.youshangdache.model.query.system.SysUserQuery;
 import com.youshangdache.model.vo.base.PageVo;
@@ -39,11 +40,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Override
 	public void updateStatus(Long id, Integer status) {
 		SysUser sysUser = this.getById(id);
-		if(status.intValue() == 1) {
-			sysUser.setStatus(status);
-		} else {
-			sysUser.setStatus(0);
-		}
+		sysUser.setStatus(status == 1 ? AccountStatusEnum.NORMAL : AccountStatusEnum.DISABLED);
 		this.updateById(sysUser);
 	}
 

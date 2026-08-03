@@ -77,7 +77,7 @@ public class XxlJobClient {
      */
     public Boolean startJob(Long jobId) {
         XxlJobInfo xxlJobInfo = new XxlJobInfo();
-        xxlJobInfo.setId(jobId.intValue());
+        xxlJobInfo.setId(jobId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -101,7 +101,7 @@ public class XxlJobClient {
      */
     public Boolean stopJob(Long jobId) {
         XxlJobInfo xxlJobInfo = new XxlJobInfo();
-        xxlJobInfo.setId(jobId.intValue());
+        xxlJobInfo.setId(jobId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -125,7 +125,7 @@ public class XxlJobClient {
      */
     public Boolean removeJob(Long jobId) {
         XxlJobInfo xxlJobInfo = new XxlJobInfo();
-        xxlJobInfo.setId(jobId.intValue());
+        xxlJobInfo.setId(jobId);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

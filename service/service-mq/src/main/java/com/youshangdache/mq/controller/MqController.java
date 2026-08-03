@@ -1,7 +1,6 @@
 package com.youshangdache.mq.controller;
 
 import com.youshangdache.common.mq.service.RabbitService;
-import com.youshangdache.mq.config.DeadLetterMqConfig;
 import com.youshangdache.mq.config.DelayedMqConfig;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

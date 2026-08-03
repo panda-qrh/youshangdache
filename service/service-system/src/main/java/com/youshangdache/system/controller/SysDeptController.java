@@ -20,7 +20,7 @@ public class SysDeptController {
 
 	@Operation(summary = "获取")
 	@GetMapping("getById/{id}")
-	public void getById(@PathVariable Long id) {
+	public SysDept getById(@PathVariable Long id) {
 		SysDept sysDept = sysDeptService.getById(id);
 		return sysDept;
 	}

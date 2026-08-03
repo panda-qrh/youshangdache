@@ -77,7 +77,7 @@ public class SysRoleController {
     @Operation(summary = "根据id列表删除")
     @DeleteMapping("batchRemove")
     public Boolean batchRemove(@RequestBody List<Long> idList) {
-        sysRoleService.removeByIds(idList);
+        return sysRoleService.removeByIds(idList);
     }
 
     @Operation(summary = "根据用户获取角色数据")

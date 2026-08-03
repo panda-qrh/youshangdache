@@ -5,7 +5,7 @@ import com.youshangdache.common.annotation.Log;
 import com.youshangdache.common.util.IpUtil;
 import com.youshangdache.model.entity.system.SysOperLog;
 import com.youshangdache.model.enums.OperationStatusEnum;
-import com.youshangdache.model.feign.SysOperLogFeignClient;
+import com.youshangdache.system.SysOperLogFeignClient;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

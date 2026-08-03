@@ -17,9 +17,6 @@ public class XxlJobInfo extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "主键ID")
-    private int id;
-
     @Schema(description = "执行器主键ID")
     private int jobGroup;
 
