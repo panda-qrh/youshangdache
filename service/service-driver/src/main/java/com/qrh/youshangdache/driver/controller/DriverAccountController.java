@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.DriverAccountService;
 import com.qrh.youshangdache.model.form.driver.TransferForm;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,8 +23,8 @@ public class DriverAccountController {
 
     @Operation(summary = "转账")
     @PostMapping("/transfer")
-    public Result<Boolean> transfer(@RequestBody TransferForm transferForm) {
-        return Result.ok(driverAccountService.transfer(transferForm));
+    public Boolean transfer(@RequestBody TransferForm transferForm) {
+        return driverAccountService.transfer(transferForm);
     }
 }
 

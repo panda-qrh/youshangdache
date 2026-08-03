@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.rules.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.rules.FeeRuleRequestForm;
 import com.qrh.youshangdache.model.vo.rules.FeeRuleResponseVo;
 import com.qrh.youshangdache.rules.service.FeeRuleService;
@@ -22,8 +21,8 @@ public class FeeRuleController {
 
     @Operation(summary = "计算订单费用")
     @PostMapping("/calculateOrderFee")
-    public Result<FeeRuleResponseVo> calculateOrderFee(@RequestBody FeeRuleRequestForm calculateOrderFeeForm) {
-        return Result.ok(feeRuleService.calculateOrderFee(calculateOrderFeeForm));
+    public FeeRuleResponseVo calculateOrderFee(@RequestBody FeeRuleRequestForm calculateOrderFeeForm) {
+        return feeRuleService.calculateOrderFee(calculateOrderFeeForm);
     }
 
 }

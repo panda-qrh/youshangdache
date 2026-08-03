@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.OcrService;
 import com.qrh.youshangdache.model.vo.driver.DriverLicenseOcrVo;
 import com.qrh.youshangdache.model.vo.driver.IdCardOcrVo;
@@ -25,14 +24,14 @@ public class OcrController {
 
     @Operation(summary = "身份证识别")
     @PostMapping("/idCardOcr")
-    public Result<IdCardOcrVo> idCardOcr(@RequestPart("file") MultipartFile file) {
-        return Result.ok(ocrService.idCardOcr(file));
+    public IdCardOcrVo idCardOcr(@RequestPart("file") MultipartFile file) {
+        return ocrService.idCardOcr(file);
     }
 
     @Operation(summary = "驾驶证识别")
     @PostMapping("/driverLicenseOcr")
-    public Result<DriverLicenseOcrVo> driverLicenseOcr(@RequestPart("file") MultipartFile file) {
-        return Result.ok(ocrService.driverLicenseOcr(file));
+    public DriverLicenseOcrVo driverLicenseOcr(@RequestPart("file") MultipartFile file) {
+        return ocrService.driverLicenseOcr(file);
     }
 
 }

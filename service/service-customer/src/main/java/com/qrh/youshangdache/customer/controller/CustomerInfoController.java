@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.customer.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.customer.service.CustomerInfoService;
 import com.qrh.youshangdache.model.form.customer.UpdateWxPhoneForm;
 import com.qrh.youshangdache.model.vo.customer.CustomerLoginVo;
@@ -25,8 +24,8 @@ public class CustomerInfoController {
 	 */
 	@Operation(summary = "用户端微信小程序登录接口")
 	@GetMapping("/login/{code}")
-	public Result<Long> login(@PathVariable String code){
-		return Result.ok(customerInfoService.login(code));
+	public Long login(@PathVariable String code){
+		return customerInfoService.login(code);
 	}
 
 	/**
@@ -37,8 +36,8 @@ public class CustomerInfoController {
 	 */
 	@Operation(summary = "获取客户基本信息")
 	@GetMapping("/getCustomerLoginInfo/{customerId}")
-	public Result<CustomerLoginVo> getCustomerInfo(@PathVariable Long customerId) {
-		return Result.ok(customerInfoService.getCustomerInfo(customerId));
+	public CustomerLoginVo getCustomerInfo(@PathVariable Long customerId) {
+		return customerInfoService.getCustomerInfo(customerId);
 	}
 	/**
 	 * 绑定用户手机号
@@ -49,14 +48,13 @@ public class CustomerInfoController {
 	 */
 	@Operation(summary = "更新客户微信手机号码")
 	@GetMapping("/updateWxPhoneNumber")
-	public Result<Void> updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
+	public Void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
 		customerInfoService.updateWxPhoneNumber(updateWxPhoneForm);
-		return Result.ok();
 	}
 	@Operation(summary = "获取客户的openId")
 	@GetMapping("/getCustomerOpenId/{customerId}")
-	public Result<String> getCustomerOpenId(@PathVariable Long customerId) {
-		return Result.ok(customerInfoService.getCustomerOpenId(customerId));
+	public String getCustomerOpenId(@PathVariable Long customerId) {
+		return customerInfoService.getCustomerOpenId(customerId);
 	}
 
 }

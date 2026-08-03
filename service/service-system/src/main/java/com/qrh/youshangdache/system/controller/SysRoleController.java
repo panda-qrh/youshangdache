@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysRole;
 import com.qrh.youshangdache.model.query.system.SysRoleQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
@@ -29,14 +28,14 @@ public class SysRoleController {
 
     @Operation(summary = "获取全部角色列表")
     @GetMapping("findAll")
-    public Result<List<SysRole>> findAll() {
+    public List<SysRole> findAll() {
         List<SysRole> roleList = sysRoleService.list();
-        return Result.ok(roleList);
+        return roleList;
     }
 
     @Operation(summary = "获取分页列表")
     @PostMapping("findPage/{page}/{limit}")
-    public Result<PageVo<SysRole>> findPage(
+    public PageVo<SysRole> findPage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
 
@@ -47,53 +46,52 @@ public class SysRoleController {
             @RequestBody SysRoleQuery roleQuery) {
         Page<SysRole> pageParam = new Page<>(page, limit);
         PageVo<SysRole> pageVo = sysRoleService.findPage(pageParam, roleQuery);
-        return Result.ok(pageVo);
+        return pageVo;
     }
 
     @Operation(summary = "获取")
     @GetMapping("getById/{id}")
-    public Result<SysRole> getById(@PathVariable Long id) {
+    public SysRole getById(@PathVariable Long id) {
         SysRole sysRole = sysRoleService.getById(id);
-        return Result.ok(sysRole);
+        return sysRole;
     }
 
     @Operation(summary = "新增角色")
     @PostMapping("save")
-    public Result<Boolean> save(@RequestBody @Validated SysRole role) {
-        return Result.ok(sysRoleService.save(role));
+    public Boolean save(@RequestBody @Validated SysRole role) {
+        return sysRoleService.save(role);
     }
 
     @Operation(summary = "修改角色")
     @PutMapping("update")
-    public Result<Boolean> update(@RequestBody SysRole role) {
-        return Result.ok(sysRoleService.updateById(role));
+    public Boolean update(@RequestBody SysRole role) {
+        return sysRoleService.updateById(role);
     }
 
     @Operation(summary = "删除角色")
     @DeleteMapping("remove/{id}")
-    public Result<Boolean> remove(@PathVariable Long id) {
-        return Result.ok(sysRoleService.removeById(id));
+    public Boolean remove(@PathVariable Long id) {
+        return sysRoleService.removeById(id);
     }
 
     @Operation(summary = "根据id列表删除")
     @DeleteMapping("batchRemove")
-    public Result<Boolean> batchRemove(@RequestBody List<Long> idList) {
+    public Boolean batchRemove(@RequestBody List<Long> idList) {
         sysRoleService.removeByIds(idList);
-        return Result.ok();
     }
 
     @Operation(summary = "根据用户获取角色数据")
     @GetMapping("/toAssign/{userId}")
-    public Result<Map<String, Object>> toAssign(@PathVariable Long userId) {
+    public Map<String, Object> toAssign(@PathVariable Long userId) {
         Map<String, Object> roleMap = sysRoleService.findRoleByUserId(userId);
-        return Result.ok(roleMap);
+        return roleMap;
     }
 
     @Operation(summary = "根据用户分配角色")
     @PostMapping("/doAssign")
-    public Result<Boolean> doAssign(@RequestBody AssginRoleVo assginRoleVo) {
+    public Boolean doAssign(@RequestBody AssginRoleVo assginRoleVo) {
         sysRoleService.doAssign(assginRoleVo);
-        return Result.ok(true);
+        return true;
     }
 
 

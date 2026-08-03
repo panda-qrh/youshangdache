@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.DriverInfoService;
 import com.qrh.youshangdache.model.entity.driver.DriverSet;
 import com.qrh.youshangdache.model.form.driver.DriverFaceModelForm;
@@ -31,8 +30,8 @@ public class DriverInfoController {
      */
     @Operation(summary = "小程序授权登录")
     @GetMapping(value = "/login/{code}")
-    public Result<Long> login(@PathVariable String code) {
-        return Result.ok(driverInfoService.login(code));
+    public Long login(@PathVariable String code) {
+        return driverInfoService.login(code);
     }
 
     /**
@@ -43,8 +42,8 @@ public class DriverInfoController {
      */
     @Operation(summary = "获取登录后的司机信息")
     @GetMapping(value = "/getDriverLoginInfo/{driverId}")
-    public Result<DriverLoginVo> getDriverLoginInfo(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.getDriverLoginInfo(driverId));
+    public DriverLoginVo getDriverLoginInfo(@PathVariable Long driverId) {
+        return driverInfoService.getDriverLoginInfo(driverId);
     }
 
     /**
@@ -55,20 +54,20 @@ public class DriverInfoController {
      */
     @Operation(summary = "获取司机认证信息")
     @GetMapping(value = "/getDriverAuthInfo/{driverId}")
-    public Result<DriverAuthInfoVo> getDriverAuthInfo(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.getDriverAuthInfo(driverId));
+    public DriverAuthInfoVo getDriverAuthInfo(@PathVariable Long driverId) {
+        return driverInfoService.getDriverAuthInfo(driverId);
     }
 
     @Operation(summary = "更新司机认证信息")
     @PostMapping("/updateDriverAuthInfo")
-    public Result<Boolean> UpdateDriverAuthInfo(@RequestBody UpdateDriverAuthInfoForm updateDriverAuthInfoForm) {
-        return Result.ok(driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm));
+    public Boolean UpdateDriverAuthInfo(@RequestBody UpdateDriverAuthInfoForm updateDriverAuthInfoForm) {
+        return driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm);
     }
 
     @Operation(summary = "创建司机人脸模型")
     @PostMapping("/creatDriverFaceModel")
-    public Result<Boolean> creatDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm) {
-        return Result.ok(driverInfoService.creatDriverFaceModel(driverFaceModelForm));
+    public Boolean creatDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm) {
+        return driverInfoService.creatDriverFaceModel(driverFaceModelForm);
     }
 
     /**
@@ -79,8 +78,8 @@ public class DriverInfoController {
      */
     @Operation(summary = "获取司机设置信息")
     @PostMapping("/getDriverSet/{driverId}")
-    public Result<DriverSet> getDriverSettingInfo(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.getDriverSet(driverId));
+    public DriverSet getDriverSettingInfo(@PathVariable Long driverId) {
+        return driverInfoService.getDriverSet(driverId);
     }
 
     /**
@@ -91,14 +90,14 @@ public class DriverInfoController {
      */
     @Operation(summary = "判断司机当日是否做过人脸识别")
     @PostMapping("/isFaceRecognition/{driverId}")
-    public Result<Boolean> isFaceRecognition(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.isFaceRecognition(driverId));
+    public Boolean isFaceRecognition(@PathVariable Long driverId) {
+        return driverInfoService.isFaceRecognition(driverId);
     }
 
     @Operation(summary = "验证司机人脸")
     @PostMapping("/verifyDriverFace")
-    public Result<Boolean> verifyDriverFace(@RequestBody DriverFaceModelForm driverFaceModelForm) {
-        return Result.ok(driverInfoService.verifyDriverFace(driverFaceModelForm));
+    public Boolean verifyDriverFace(@RequestBody DriverFaceModelForm driverFaceModelForm) {
+        return driverInfoService.verifyDriverFace(driverFaceModelForm);
     }
 
     /**
@@ -114,8 +113,8 @@ public class DriverInfoController {
      */
     @Operation(summary = "更新司机的接单状态")
     @PostMapping("/updateServiceStatus/{driverId}/{status}")
-    public Result<Boolean> updateServiceStatus(@PathVariable Long driverId, @PathVariable Integer status) {
-        return Result.ok(driverInfoService.updateServiceStatus(driverId, status));
+    public Boolean updateServiceStatus(@PathVariable Long driverId, @PathVariable Integer status) {
+        return driverInfoService.updateServiceStatus(driverId, status);
     }
 
     /**
@@ -126,14 +125,14 @@ public class DriverInfoController {
      */
     @Operation(summary = "获取司机基本信息")
     @PostMapping("/getDriverInfo/{driverId}")
-    public Result<DriverInfoVo> getDriverInfo(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.getDriverInfoOrder(driverId));
+    public DriverInfoVo getDriverInfo(@PathVariable Long driverId) {
+        return driverInfoService.getDriverInfoOrder(driverId);
     }
 
     @Operation(summary = "获取客户的openId")
     @GetMapping("/getDriverOpenId/{driverId}")
-    public Result<String> getDriverOpenId(@PathVariable Long driverId) {
-        return Result.ok(driverInfoService.getDriverOpenId(driverId));
+    public String getDriverOpenId(@PathVariable Long driverId) {
+        return driverInfoService.getDriverOpenId(driverId);
     }
 
 

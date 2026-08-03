@@ -1,7 +1,6 @@
 package com.qrh.youshangdache.system.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysUser;
 import com.qrh.youshangdache.model.vo.system.LoginVo;
 import com.qrh.youshangdache.system.service.SysMenuService;
@@ -30,28 +29,27 @@ public class SecurityLoginController {
 
 	@Operation(summary = "模拟登录")
 	@PostMapping("login")
-	public Result login(@RequestBody LoginVo loginVo) {
+	public void login(@RequestBody LoginVo loginVo) {
 		log.info(JSON.toJSONString(loginVo));
-		return Result.ok();
 	}
 
 	@Operation(summary = "根据用户名获取用户信息")
 	@GetMapping("getByUsername/{username}")
-	public Result<SysUser> getByUsername(@PathVariable String username) {
-		return Result.ok(sysUserService.getByUsername(username));
+	public SysUser getByUsername(@PathVariable String username) {
+		return sysUserService.getByUsername(username);
 	}
 
 	@Operation(summary = "获取用户按钮权限")
 	@GetMapping("findUserPermsList/{userId}")
-	public Result<List<String>> findUserPermsList(@PathVariable Long userId) {
-		return Result.ok(sysMenuService.findUserPermsList(userId));
+	public List<String> findUserPermsList(@PathVariable Long userId) {
+		return sysMenuService.findUserPermsList(userId);
 	}
 
 	@Operation(summary = "获取用户信息")
 	@GetMapping("getUserInfo/{userId}")
-	public Result<Map<String, Object>> getUserInfo(@PathVariable Long userId) {
+	public Map<String, Object> getUserInfo(@PathVariable Long userId) {
 		Map<String, Object> map = sysUserService.getUserInfo(userId);
-		return Result.ok(map);
+		return map;
 	}
 }
 

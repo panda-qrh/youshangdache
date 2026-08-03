@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysMenu;
 import com.qrh.youshangdache.model.vo.system.AssginMenuVo;
 import com.qrh.youshangdache.system.service.SysMenuService;
@@ -21,41 +20,41 @@ public class SysMenuController {
 
     @Operation(summary = "获取菜单")
     @GetMapping("findNodes")
-    public Result<List<SysMenu>> findNodes() {
+    public List<SysMenu> findNodes() {
         List<SysMenu> list = sysMenuService.findNodes();
-        return Result.ok(list);
+        return list;
     }
 
     @Operation(summary = "新增菜单")
     @PostMapping("save")
-    public Result<Boolean> save(@RequestBody SysMenu permission) {
-        return Result.ok(sysMenuService.save(permission));
+    public Boolean save(@RequestBody SysMenu permission) {
+        return sysMenuService.save(permission);
     }
 
     @Operation(summary = "修改菜单")
     @PutMapping("update")
-    public Result<Boolean> update(@RequestBody SysMenu permission) {
-        return Result.ok(sysMenuService.updateById(permission));
+    public Boolean update(@RequestBody SysMenu permission) {
+        return sysMenuService.updateById(permission);
     }
 
     @Operation(summary = "删除菜单")
     @DeleteMapping("remove/{id}")
-    public Result<Boolean> remove(@PathVariable Long id) {
-        return Result.ok(sysMenuService.removeById(id));
+    public Boolean remove(@PathVariable Long id) {
+        return sysMenuService.removeById(id);
     }
 
     @Operation(summary = "根据角色获取菜单")
     @GetMapping("toAssign/{roleId}")
-    public Result<List<SysMenu>> toAssign(@PathVariable Long roleId) {
+    public List<SysMenu> toAssign(@PathVariable Long roleId) {
         List<SysMenu> list = sysMenuService.findSysMenuByRoleId(roleId);
-        return Result.ok(list);
+        return list;
     }
 
     @Operation(summary = "给角色分配权限")
     @PostMapping("/doAssign")
-    public Result<Boolean> doAssign(@RequestBody AssginMenuVo assginMenuVo) {
+    public Boolean doAssign(@RequestBody AssginMenuVo assginMenuVo) {
         sysMenuService.doAssign(assginMenuVo);
-        return Result.ok(true);
+        return true;
     }
 }
 

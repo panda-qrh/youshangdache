@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysPost;
 import com.qrh.youshangdache.model.query.system.SysPostQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
@@ -25,7 +24,7 @@ public class SysPostController {
 
 	@Operation(summary = "获取分页列表")
 	@PostMapping("findPage/{page}/{limit}")
-	public Result<PageVo<SysPost>> findPage(
+	public PageVo<SysPost> findPage(
 		@Parameter(name = "page", description = "当前页码", required = true)
 		@PathVariable Long page,
 	
@@ -36,44 +35,44 @@ public class SysPostController {
 		@RequestBody SysPostQuery sysPostQuery) {
 		Page<SysPost> pageParam = new Page<>(page, limit);
 		PageVo<SysPost> pageVo = sysPostService.findPage(pageParam, sysPostQuery);
-		return Result.ok(pageVo);
+		return pageVo;
 	}
 
 	@Operation(summary = "获取")
 	@GetMapping("getById/{id}")
-	public Result<SysPost> getById(@PathVariable Long id) {
+	public SysPost getById(@PathVariable Long id) {
 		SysPost sysPost = sysPostService.getById(id);
-		return Result.ok(sysPost);
+		return sysPost;
 	}
 
 	@GetMapping("findAll")
-	public Result<List<SysPost>> findAll() {
-		return Result.ok(sysPostService.findAll());
+	public List<SysPost> findAll() {
+		return sysPostService.findAll();
 	}
 
 	@Operation(summary = "新增")
 	@PostMapping("save")
-	public Result<Boolean> save(@RequestBody SysPost sysPost) {
-		return Result.ok(sysPostService.save(sysPost));
+	public Boolean save(@RequestBody SysPost sysPost) {
+		return sysPostService.save(sysPost);
 	}
 
 	@Operation(summary = "修改")
 	@PutMapping("update")
-	public Result<Boolean> update(@RequestBody SysPost sysPost) {
-		return Result.ok(sysPostService.updateById(sysPost));
+	public Boolean update(@RequestBody SysPost sysPost) {
+		return sysPostService.updateById(sysPost);
 	}
 
 	@Operation(summary = "删除")
 	@DeleteMapping("remove/{id}")
-	public Result<Boolean> remove(@PathVariable Long id) {
-		return Result.ok(sysPostService.removeById(id));
+	public Boolean remove(@PathVariable Long id) {
+		return sysPostService.removeById(id);
 	}
 
 	@Operation(summary = "更新状态")
 	@GetMapping("updateStatus/{id}/{status}")
-	public Result<Boolean> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
+	public Boolean updateStatus(@PathVariable Long id, @PathVariable Integer status) {
 		sysPostService.updateStatus(id, status);
-		return Result.ok(true);
+		return true;
 	}
 	
 }

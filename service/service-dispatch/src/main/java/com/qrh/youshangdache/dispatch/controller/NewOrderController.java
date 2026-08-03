@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.dispatch.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.dispatch.service.NewOrderService;
 import com.qrh.youshangdache.model.vo.dispatch.NewOrderTaskVo;
 import com.qrh.youshangdache.model.vo.order.NewOrderDataVo;
@@ -28,8 +27,8 @@ public class NewOrderController {
      */
     @Operation(summary = "添加并开始新订单任务调度")
     @PostMapping("/addAndStartTask")
-    public Result<Long> addAndStartTask(@RequestBody NewOrderTaskVo newOrderTaskVo) {
-        return Result.ok(newOrderService.addAndStartTask(newOrderTaskVo));
+    public Long addAndStartTask(@RequestBody NewOrderTaskVo newOrderTaskVo) {
+        return newOrderService.addAndStartTask(newOrderTaskVo);
     }
 
     /**
@@ -39,8 +38,8 @@ public class NewOrderController {
      */
     @Operation(summary = "查询司机的最新订单数据")
     @PostMapping("/findNewOrderQueueData/{driverId}")
-    public Result<List<NewOrderDataVo>> findNewOrderQueueData(@PathVariable Long driverId) {
-        return Result.ok(newOrderService.findNewOrderQueueData(driverId));
+    public List<NewOrderDataVo> findNewOrderQueueData(@PathVariable Long driverId) {
+        return newOrderService.findNewOrderQueueData(driverId);
     }
 
     /**
@@ -50,8 +49,8 @@ public class NewOrderController {
      */
     @Operation(summary = "清空新订单队列数据")
     @PostMapping("/clearNewOrderQueueData/{driverId}")
-    public Result<Boolean> clearNewOrderQueueData(@PathVariable Long driverId) {
-        return Result.ok(newOrderService.clearNewOrderQueueData(driverId));
+    public Boolean clearNewOrderQueueData(@PathVariable Long driverId) {
+        return newOrderService.clearNewOrderQueueData(driverId);
     }
 
 }

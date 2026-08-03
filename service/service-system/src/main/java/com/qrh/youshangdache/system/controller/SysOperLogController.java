@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysOperLog;
 import com.qrh.youshangdache.model.query.system.SysOperLogQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
@@ -29,7 +28,7 @@ public class SysOperLogController {
 
 	@Operation(summary = "获取分页列表")
 	@PostMapping("findPage/{page}/{limit}")
-	public Result findPage(
+	public void findPage(
 		@Parameter(name = "page", description = "当前页码", required = true)
 		@PathVariable Long page,
 	
@@ -40,21 +39,21 @@ public class SysOperLogController {
 		@RequestBody SysOperLogQuery sysOperLogQuery) {
 		Page<SysOperLog> pageParam = new Page<>(page, limit);
 		PageVo<SysOperLog> pageVo = sysOperLogService.findPage(pageParam, sysOperLogQuery);
-		return Result.ok(pageVo);
+		return pageVo;
 	}
 
 	@Operation(summary = "获取")
 	@GetMapping("getById/{id}")
-	public Result<SysOperLog> getById(@PathVariable Long id) {
+	public SysOperLog getById(@PathVariable Long id) {
 		SysOperLog sysOperLog = sysOperLogService.getById(id);
-		return Result.ok(sysOperLog);
+		return sysOperLog;
 	}
 
 	@Operation(summary = "记录日志")
 	@PostMapping("saveSysLog")
-	public Result<Boolean> saveSysLog(@RequestBody SysOperLog sysOperLog) {
+	public Boolean saveSysLog(@RequestBody SysOperLog sysOperLog) {
 		sysOperLogService.saveSysLog(sysOperLog);
-		return Result.ok(true);
+		return true;
 	}
 
 }

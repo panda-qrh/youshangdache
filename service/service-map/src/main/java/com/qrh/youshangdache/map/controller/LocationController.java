@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.map.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.map.service.LocationService;
 import com.qrh.youshangdache.model.form.map.OrderServiceLocationForm;
 import com.qrh.youshangdache.model.form.map.SearchNearByDriverForm;
@@ -35,9 +34,8 @@ public class LocationController {
      */
     @Operation(summary = "开启接单服务：更新司机经纬度位置")
     @PostMapping("/updateDriverLocation")
-    public Result<Void> updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
+    public Void updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
         locationService.updateDriverLocation(updateDriverLocationForm);
-        return Result.ok();
     }
 
     /**
@@ -48,9 +46,8 @@ public class LocationController {
      */
     @Operation(summary = "关闭接单服务：删除司机经纬度位置")
     @DeleteMapping("/removeDriverLocation/{driverId}")
-    public Result<Void> removeDriverLocation(@PathVariable Long driverId) {
+    public Void removeDriverLocation(@PathVariable Long driverId) {
         locationService.removeDriverLocation(driverId);
-        return Result.ok();
     }
 
     /**
@@ -62,8 +59,8 @@ public class LocationController {
      */
     @Operation(summary = "搜索附近满足条件的司机")
     @PostMapping("/searchNearByDriver")
-    public Result<List<NearByDriverVo>> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm) {
-        return Result.ok(locationService.searchNearByDriver(searchNearByDriverForm));
+    public List<NearByDriverVo> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm) {
+        return locationService.searchNearByDriver(searchNearByDriverForm);
     }
 
     /**
@@ -78,8 +75,8 @@ public class LocationController {
      */
     @Operation(summary = "司机赶往代驾起始点，更新订单地址到缓存")
     @PostMapping("/updateOrderLocationToCache")
-    public Result<Boolean> updateOrderLocationToCache(@RequestBody UpdateOrderLocationForm updateOrderLocationForm) {
-        return Result.ok(locationService.updateOrderLocationToCache(updateOrderLocationForm));
+    public Boolean updateOrderLocationToCache(@RequestBody UpdateOrderLocationForm updateOrderLocationForm) {
+        return locationService.updateOrderLocationToCache(updateOrderLocationForm);
     }
 
     /**
@@ -94,8 +91,8 @@ public class LocationController {
      */
     @Operation(summary = "司机赶往代驾起始点，更新订单经纬度位置")
     @GetMapping("/getCacheOrderLocation/{orderId}")
-    public Result<OrderLocationVo> getCacheOrderLocation(@PathVariable Long orderId) {
-        return Result.ok(locationService.getCacheOrderLocation(orderId));
+    public OrderLocationVo getCacheOrderLocation(@PathVariable Long orderId) {
+        return locationService.getCacheOrderLocation(orderId);
     }
 
     /**
@@ -110,8 +107,8 @@ public class LocationController {
      */
     @Operation(summary = "批量保存代驾服务订单位置")
     @PostMapping("/saveOrderServiceLocation")
-    public Result<Boolean> saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderServiceLocationForms) {
-        return Result.ok(locationService.saveOrderServiceLocation(orderServiceLocationForms));
+    public Boolean saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderServiceLocationForms) {
+        return locationService.saveOrderServiceLocation(orderServiceLocationForms);
     }
 
     /**
@@ -126,8 +123,8 @@ public class LocationController {
      */
     @Operation(summary = "代驾服务：获取订单服务最后一个位置信息")
     @GetMapping("/getOrderServiceLastLocation/{orderId}")
-    public Result<OrderServiceLastLocationVo> getOrderServiceLastLocation(@PathVariable Long orderId) {
-        return Result.ok(locationService.getOrderServiceLastLocation(orderId));
+    public OrderServiceLastLocationVo getOrderServiceLastLocation(@PathVariable Long orderId) {
+        return locationService.getOrderServiceLastLocation(orderId);
     }
 
     /**
@@ -142,8 +139,8 @@ public class LocationController {
      */
     @Operation(summary = "代驾服务：计算订单实际里程")
     @GetMapping("/calculateOrderRealDistance/{orderId}")
-    public Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId) {
-        return Result.ok(locationService.calculateOrderRealDistance(orderId));
+    public BigDecimal calculateOrderRealDistance(@PathVariable Long orderId) {
+        return locationService.calculateOrderRealDistance(orderId);
     }
 }
 

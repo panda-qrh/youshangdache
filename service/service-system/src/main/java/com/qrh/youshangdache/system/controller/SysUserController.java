@@ -2,7 +2,6 @@ package com.qrh.youshangdache.system.controller;
 
 import com.qrh.youshangdache.common.annotation.Log;
 import com.qrh.youshangdache.model.enums.BusinessTypeEnum;
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.util.MD5;
 import com.qrh.youshangdache.model.entity.system.SysUser;
 import com.qrh.youshangdache.model.query.system.SysUserQuery;
@@ -27,7 +26,7 @@ public class SysUserController {
 
     @Operation(summary = "获取分页列表")
     @PostMapping("findPage/{page}/{limit}")
-    public Result<PageVo<SysUser>> findPage(
+    public PageVo<SysUser> findPage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
 
@@ -38,41 +37,41 @@ public class SysUserController {
             @RequestBody SysUserQuery sysUserQuery) {
         Page<SysUser> pageParam = new Page<>(page, limit);
         PageVo<SysUser> pageVo = sysUserService.findPage(pageParam, sysUserQuery);
-        return Result.ok(pageVo);
+        return pageVo;
     }
 
     @Operation(summary = "获取用户")
     @GetMapping("getById/{id}")
-    public Result<SysUser> getById(@PathVariable Long id) {
+    public SysUser getById(@PathVariable Long id) {
         SysUser sysUser = sysUserService.getById(id);
-        return Result.ok(sysUser);
+        return sysUser;
     }
 
     @Log(title = "用户管理", businessType = BusinessTypeEnum.INSERT)
     @Operation(summary = "保存用户")
     @PostMapping("save")
-    public Result<Boolean> save(@RequestBody SysUser user) {
+    public Boolean save(@RequestBody SysUser user) {
         user.setPassword(MD5.encrypt(user.getPassword()));
-        return Result.ok(sysUserService.save(user));
+        return sysUserService.save(user);
     }
 
     @Operation(summary = "更新用户")
     @PutMapping("update")
-    public Result<Boolean> updateById(@RequestBody SysUser sysUser) {
-        return Result.ok(sysUserService.updateById(sysUser));
+    public Boolean updateById(@RequestBody SysUser sysUser) {
+        return sysUserService.updateById(sysUser);
     }
 
     @Operation(summary = "删除用户")
     @DeleteMapping("remove/{id}")
-    public Result<Boolean> remove(@PathVariable Long id) {
-        return Result.ok(sysUserService.removeById(id));
+    public Boolean remove(@PathVariable Long id) {
+        return sysUserService.removeById(id);
     }
 
     @Operation(summary = "更新状态")
     @GetMapping("updateStatus/{id}/{status}")
-    public Result<Boolean> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
+    public Boolean updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         sysUserService.updateStatus(id, status);
-        return Result.ok(true);
+        return true;
     }
 }
 

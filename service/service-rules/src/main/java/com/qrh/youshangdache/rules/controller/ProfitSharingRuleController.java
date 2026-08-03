@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.rules.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.rules.ProfitsharingRuleRequestForm;
 import com.qrh.youshangdache.model.vo.rules.ProfitsharingRuleResponseVo;
 import com.qrh.youshangdache.rules.service.ProfitsharingRuleService;
@@ -22,8 +21,8 @@ public class ProfitSharingRuleController {
 
     @Operation(summary = "计算订单奖励费用")
     @PostMapping("/calculateProfitsharingFee")
-    public Result<ProfitsharingRuleResponseVo> calculateProfitSharingFee(@RequestBody ProfitsharingRuleRequestForm profitsharingRuleRequestForm) {
-        return Result.ok(profitsharingRuleService.calculateProfitSharingFee(profitsharingRuleRequestForm));
+    public ProfitsharingRuleResponseVo calculateProfitSharingFee(@RequestBody ProfitsharingRuleRequestForm profitsharingRuleRequestForm) {
+        return profitsharingRuleService.calculateProfitSharingFee(profitsharingRuleRequestForm);
     }
 
 }

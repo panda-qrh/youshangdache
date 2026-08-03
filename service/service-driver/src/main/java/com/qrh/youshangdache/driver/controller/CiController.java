@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.CiService;
 import com.qrh.youshangdache.model.vo.order.TextAuditingVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,8 +22,8 @@ public class CiController {
 
 	@Operation(summary = "文本审核")
     @PostMapping("/textAuditing")
-    public Result<TextAuditingVo> textAuditing(@RequestBody String content){
-	    return Result.ok(ciService.textAuditing(content));
+    public TextAuditingVo textAuditing(@RequestBody String content){
+	    return ciService.textAuditing(content);
     }
 
 }

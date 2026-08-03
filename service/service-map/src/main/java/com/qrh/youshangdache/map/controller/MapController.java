@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.map.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.map.service.MapService;
 import com.qrh.youshangdache.model.form.map.CalculateDrivingLineForm;
 import com.qrh.youshangdache.model.vo.map.DrivingLineVo;
@@ -28,8 +27,8 @@ public class MapController {
      */
     @Operation(summary = "计算驾驶线路")
     @PostMapping("/calculateDrivingLine")
-    public Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
-        return Result.ok(mapService.calculateDrivingLine(calculateDrivingLineForm));
+    public DrivingLineVo calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
+        return mapService.calculateDrivingLine(calculateDrivingLineForm);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.driver.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.driver.service.CosService;
 import com.qrh.youshangdache.model.vo.driver.CosUploadVo;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,9 +24,9 @@ public class CosController {
      * @return
      */
     @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-   public Result<CosUploadVo> upload(@RequestPart MultipartFile file,
+   public CosUploadVo upload(@RequestPart MultipartFile file,
                                @RequestParam(name="path",defaultValue = "auth")String path){
-        return Result.ok(cosService.upload(file,path));
+        return cosService.upload(file,path);
     }
 
 }

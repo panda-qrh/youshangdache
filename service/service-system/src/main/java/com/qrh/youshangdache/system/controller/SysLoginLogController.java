@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.system.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysLoginLog;
 import com.qrh.youshangdache.model.query.system.SysLoginLogQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
@@ -28,7 +27,7 @@ public class SysLoginLogController {
 
 	@Operation(summary = "获取分页列表")
 	@PostMapping("findPage/{page}/{limit}")
-	public Result<PageVo<SysLoginLog>> findPage(
+	public PageVo<SysLoginLog> findPage(
 		@Parameter(name = "page", description = "当前页码", required = true)
 		@PathVariable Long page,
 	
@@ -39,21 +38,21 @@ public class SysLoginLogController {
 		@RequestBody SysLoginLogQuery sysLoginLogQuery) {
 		Page<SysLoginLog> pageParam = new Page<>(page, limit);
 		PageVo<SysLoginLog> pageModel = sysLoginLogService.findPage(pageParam, sysLoginLogQuery);
-		return Result.ok(pageModel);
+		return pageModel;
 	}
 
 	@Operation(summary = "获取")
 	@GetMapping("getById/{id}")
-	public Result<SysLoginLog> getById(@PathVariable Long id) {
+	public SysLoginLog getById(@PathVariable Long id) {
 		SysLoginLog sysLoginLog = sysLoginLogService.getById(id);
-		return Result.ok(sysLoginLog);
+		return sysLoginLog;
 	}
 
 	@Operation(summary = "记录登录日志")
 	@PostMapping("recordLoginLog")
-	public Result<Boolean> recordLoginLog(@RequestBody SysLoginLog sysLoginLog) {
+	public Boolean recordLoginLog(@RequestBody SysLoginLog sysLoginLog) {
 		sysLoginLogService.recordLoginLog(sysLoginLog);
-		return Result.ok(true);
+		return true;
 	}
 
 }

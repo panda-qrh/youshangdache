@@ -1,6 +1,5 @@
 package com.qrh.youshangdache.rules.controller;
 
-import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.rules.RewardRuleRequestForm;
 import com.qrh.youshangdache.model.vo.rules.RewardRuleResponseVo;
 import com.qrh.youshangdache.rules.service.RewardRuleService;
@@ -28,8 +27,8 @@ public class RewardRuleController {
      */
     @Operation(summary = "计算订单奖励费用")
     @PostMapping("calculateOrderRewardFee")
-    public Result<RewardRuleResponseVo> calculateOrderRewardFee(@RequestBody RewardRuleRequestForm rewardRuleRequestForm) {
-        return Result.ok(rewardRuleService.calculateOrderRewardFee(rewardRuleRequestForm));
+    public RewardRuleResponseVo calculateOrderRewardFee(@RequestBody RewardRuleRequestForm rewardRuleRequestForm) {
+        return rewardRuleService.calculateOrderRewardFee(rewardRuleRequestForm);
     }
 
 }
