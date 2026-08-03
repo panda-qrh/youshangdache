@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.driver.service.impl;
 
-import com.qrh.youshangdache.driver.client.OcrFeignClient;
+import com.qrh.youshangdache.driver.OcrFeignClient;
 import com.qrh.youshangdache.driver.service.OcrService;
 import com.qrh.youshangdache.model.vo.driver.DriverLicenseOcrVo;
 import com.qrh.youshangdache.model.vo.driver.IdCardOcrVo;

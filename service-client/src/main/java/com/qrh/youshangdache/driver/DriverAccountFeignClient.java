@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.driver.client;
+package com.qrh.youshangdache.driver;
 
 
 import com.qrh.youshangdache.common.result.Result;

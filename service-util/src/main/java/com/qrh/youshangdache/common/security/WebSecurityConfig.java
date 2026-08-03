@@ -3,7 +3,7 @@ package com.qrh.youshangdache.common.security;
 import com.qrh.youshangdache.security.custom.CustomMd5PasswordEncoder;
 import com.qrh.youshangdache.security.fillter.TokenAuthenticationFilter;
 import com.qrh.youshangdache.security.fillter.TokenLoginFilter;
-import com.qrh.youshangdache.system.client.SysLoginLogFeignClient;
+import com.qrh.youshangdache.system.SysLoginLogFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

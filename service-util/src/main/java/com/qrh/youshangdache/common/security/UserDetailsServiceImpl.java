@@ -3,7 +3,7 @@ package com.qrh.youshangdache.common.security;
 import com.qrh.youshangdache.model.enums.AccountStatusEnum;
 import com.qrh.youshangdache.model.entity.system.SysUser;
 import com.qrh.youshangdache.security.custom.CustomUser;
-import com.qrh.youshangdache.system.client.SecurityLoginFeignClient;
+import com.qrh.youshangdache.system.SecurityLoginFeignClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

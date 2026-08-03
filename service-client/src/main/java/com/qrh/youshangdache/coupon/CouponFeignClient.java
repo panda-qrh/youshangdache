@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.coupon.client;
+package com.qrh.youshangdache.coupon;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.coupon.UseCouponForm;

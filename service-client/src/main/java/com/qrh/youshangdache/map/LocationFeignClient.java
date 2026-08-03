@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.map.client;
+package com.qrh.youshangdache.map;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.map.OrderServiceLocationForm;

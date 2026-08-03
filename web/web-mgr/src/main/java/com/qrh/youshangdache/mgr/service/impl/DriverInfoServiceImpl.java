@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.mgr.service.impl;
 
-import com.qrh.youshangdache.driver.client.DriverInfoFeignClient;
+import com.qrh.youshangdache.driver.DriverInfoFeignClient;
 import com.qrh.youshangdache.mgr.service.DriverInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

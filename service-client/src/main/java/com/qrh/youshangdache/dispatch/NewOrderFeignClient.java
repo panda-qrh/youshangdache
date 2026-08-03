@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.dispatch.client;
+package com.qrh.youshangdache.dispatch;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.vo.dispatch.NewOrderTaskVo;

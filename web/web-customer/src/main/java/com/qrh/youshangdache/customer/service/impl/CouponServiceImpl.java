@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.customer.service.impl;
 
-import com.qrh.youshangdache.coupon.client.CouponFeignClient;
+import com.qrh.youshangdache.coupon.CouponFeignClient;
 import com.qrh.youshangdache.customer.service.CouponService;
 import com.qrh.youshangdache.model.vo.base.PageVo;
 import com.qrh.youshangdache.model.vo.coupon.AvailableCouponVo;
@@ -8,7 +8,7 @@ import com.qrh.youshangdache.model.vo.coupon.NoReceiveCouponVo;
 import com.qrh.youshangdache.model.vo.coupon.NoUseCouponVo;
 import com.qrh.youshangdache.model.vo.coupon.UsedCouponVo;
 import com.qrh.youshangdache.model.vo.order.OrderBillVo;
-import com.qrh.youshangdache.order.client.OrderInfoFeignClient;
+import com.qrh.youshangdache.order.OrderInfoFeignClient;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

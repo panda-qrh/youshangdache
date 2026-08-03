@@ -1,13 +1,13 @@
 package com.qrh.youshangdache.driver.service.impl;
 
-import com.qrh.youshangdache.driver.client.CiFeignClient;
+import com.qrh.youshangdache.driver.CiFeignClient;
 import com.qrh.youshangdache.driver.service.FileService;
 import com.qrh.youshangdache.driver.service.MonitorService;
 import com.qrh.youshangdache.model.entity.order.OrderMonitor;
 import com.qrh.youshangdache.model.entity.order.OrderMonitorRecord;
 import com.qrh.youshangdache.model.form.order.OrderMonitorForm;
 import com.qrh.youshangdache.model.vo.order.TextAuditingVo;
-import com.qrh.youshangdache.order.client.OrderMonitorFeignClient;
+import com.qrh.youshangdache.order.OrderMonitorFeignClient;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

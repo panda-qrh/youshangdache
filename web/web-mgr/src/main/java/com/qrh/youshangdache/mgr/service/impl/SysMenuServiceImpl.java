@@ -3,7 +3,7 @@ package com.qrh.youshangdache.mgr.service.impl;
 import com.qrh.youshangdache.mgr.service.SysMenuService;
 import com.qrh.youshangdache.model.entity.system.SysMenu;
 import com.qrh.youshangdache.model.vo.system.AssginMenuVo;
-import com.qrh.youshangdache.system.client.SysMenuFeignClient;
+import com.qrh.youshangdache.system.SysMenuFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.rules.client;
+package com.qrh.youshangdache.rules;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.rules.RewardRuleRequestForm;

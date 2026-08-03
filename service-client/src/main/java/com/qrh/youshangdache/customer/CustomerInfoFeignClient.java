@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.customer.client;
+package com.qrh.youshangdache.customer;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.form.customer.UpdateWxPhoneForm;

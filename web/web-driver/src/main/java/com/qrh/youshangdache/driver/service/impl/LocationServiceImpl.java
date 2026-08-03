@@ -2,9 +2,9 @@ package com.qrh.youshangdache.driver.service.impl;
 
 import com.qrh.youshangdache.common.execption.GuiguException;
 import com.qrh.youshangdache.common.result.ResultCodeEnum;
-import com.qrh.youshangdache.driver.client.DriverInfoFeignClient;
+import com.qrh.youshangdache.driver.DriverInfoFeignClient;
 import com.qrh.youshangdache.driver.service.LocationService;
-import com.qrh.youshangdache.map.client.LocationFeignClient;
+import com.qrh.youshangdache.map.LocationFeignClient;
 import com.qrh.youshangdache.model.entity.driver.DriverSet;
 import com.qrh.youshangdache.model.enums.DriverServiceStatusEnum;
 import com.qrh.youshangdache.model.form.map.OrderServiceLocationForm;

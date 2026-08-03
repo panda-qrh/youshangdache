@@ -1,4 +1,4 @@
-package com.qrh.youshangdache.system.client;
+package com.qrh.youshangdache.system;
 
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.model.entity.system.SysDept;
