@@ -8,6 +8,7 @@ import com.qrh.youshangdache.coupon.mapper.CustomerCouponMapper;
 import com.qrh.youshangdache.coupon.service.CouponInfoService;
 import com.qrh.youshangdache.model.entity.coupon.CouponInfo;
 import com.qrh.youshangdache.model.entity.coupon.CustomerCoupon;
+import com.qrh.youshangdache.model.enums.CouponStatusEnum;
 import com.qrh.youshangdache.model.enums.CouponTypeEnum;
 import com.qrh.youshangdache.model.enums.CouponUsageThresholdEnum;
 import com.qrh.youshangdache.model.form.coupon.UseCouponForm;
@@ -59,12 +60,12 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
             throw new GuiguException(ResultCodeEnum.DATA_ERROR);
         }
         //3 判断优惠券是否是当前乘客所持有的
-        if (customerCoupon.getCustomerId() != useCouponForm.getCustomerId()) {
+        if (!customerCoupon.getCustomerId().equals(useCouponForm.getCustomerId())) {
             throw new GuiguException(ResultCodeEnum.DATA_ERROR);
         }
         //4 判断是否具备优惠券使用条件
         BigDecimal reduceAmount = null;
-        if (couponInfo.getCouponType() == 1) {
+        if (couponInfo.getCouponType() == CouponTypeEnum.CASH) {
             if (couponInfo.getConditionAmount().doubleValue() == 0 &&
                     useCouponForm.getOrderAmount().subtract(couponInfo.getAmount()).doubleValue() > 0) {
                 reduceAmount = couponInfo.getAmount();
@@ -73,11 +74,11 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
                     useCouponForm.getOrderAmount().subtract(couponInfo.getConditionAmount()).doubleValue() > 0) {
                 reduceAmount = couponInfo.getAmount();
             }
-        } else if (couponInfo.getCouponType() == 2) {
+        }
+        if (couponInfo.getCouponType() == CouponTypeEnum.DISCOUNT) {
             BigDecimal discountOrderAmount = useCouponForm.getOrderAmount()
                     .multiply(couponInfo.getDiscount())
-                    .divide(new BigDecimal("10"))
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .divide(new BigDecimal("10"),2, RoundingMode.HALF_UP);
             if (couponInfo.getConditionAmount().doubleValue() == 0) {
                 reduceAmount = useCouponForm.getOrderAmount().subtract(discountOrderAmount);
             }
@@ -87,7 +88,7 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
             }
         }
         //5 如果满足条件，更新两张表的数据
-        if (reduceAmount.doubleValue() > 0) {
+        if (reduceAmount != null && reduceAmount.doubleValue() > 0) {
             Integer oldUseCount = couponInfo.getUseCount();
             couponInfo.setUseCount(oldUseCount + 1);
             //更新已使用的数量
@@ -119,8 +120,7 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         //3 遍历乘客未使用优惠券列表，得到每个优惠券
         //3 是现金券
         List<NoUseCouponVo> typeList = list.stream()
-                .filter(item -> item.getCouponType()
-                        .equals(CouponTypeEnum.CASH.getCode()))
+                .filter(item -> item.getCouponType() == CouponTypeEnum.CASH)
                 .toList();
         for (NoUseCouponVo noUseCouponVo : typeList) {
             BigDecimal reduceAmount = noUseCouponVo.getAmount();
@@ -137,14 +137,12 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         }
         //4 折扣券
         List<NoUseCouponVo> typeList2 = list.stream()
-                .filter(item -> item.getCouponType()
-                        .equals(CouponTypeEnum.DISCOUNT.getCode()))
+                .filter(item -> item.getCouponType() == CouponTypeEnum.DISCOUNT)
                 .toList();
         for (NoUseCouponVo noUseCouponVo : typeList2) {
             //折扣之后的金额
             BigDecimal discountAmount = orderAmount.multiply(noUseCouponVo.getDiscount())
-                    .divide(new BigDecimal("10"))
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .divide(new BigDecimal("10"), 2, RoundingMode.HALF_UP);
             BigDecimal reduceAmount = orderAmount.subtract(discountAmount);
             //没有门槛
             if (noUseCouponVo.getConditionAmount().intValue() == CouponUsageThresholdEnum.NO_THRESHOLD.getCode()) {
@@ -244,7 +242,7 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         CustomerCoupon customerCoupon = new CustomerCoupon();
         customerCoupon.setCustomerId(customerId);
         customerCoupon.setCouponId(couponId);
-        customerCoupon.setStatus(1);
+        customerCoupon.setStatus(CouponStatusEnum.NOT_USED);
         customerCoupon.setReceiveTime(new Date());
         customerCoupon.setExpireTime(expireTime);
         customerCouponMapper.insert(customerCoupon);

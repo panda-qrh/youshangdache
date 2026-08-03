@@ -3,6 +3,7 @@ package com.qrh.youshangdache.model.entity.order;
 import com.qrh.youshangdache.model.entity.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qrh.youshangdache.model.enums.ProfitsharingStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -51,8 +52,8 @@ public class OrderProfitsharing extends BaseEntity {
 	@TableField("driver_income")
 	private BigDecimal driverIncome;
 
-    @Schema(description = "分账状态，1未分账，2已分账")
+    @Schema(description = "分账状态，0未分账，1已分账")
 	@TableField("status")
-	private Integer status;
+	private ProfitsharingStatusEnum status;
 
 }

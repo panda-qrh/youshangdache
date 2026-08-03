@@ -1,5 +1,6 @@
 package com.qrh.youshangdache.model.vo.coupon;
 
+import com.qrh.youshangdache.model.enums.CouponTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class NoUseCouponVo {
 	private Long id;
 
     @Schema(description = "优惠卷类型 1 现金券 2 折扣")
-	private Integer couponType;
+	private CouponTypeEnum couponType;
 
     @Schema(description = "优惠卷名字")
 	private String name;

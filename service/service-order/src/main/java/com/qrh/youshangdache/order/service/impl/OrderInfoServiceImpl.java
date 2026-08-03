@@ -1,6 +1,7 @@
 package com.qrh.youshangdache.order.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qrh.youshangdache.common.constant.ExchangeConst;
@@ -12,6 +13,7 @@ import com.qrh.youshangdache.common.result.ResultCodeEnum;
 import com.qrh.youshangdache.common.service.RabbitService;
 import com.qrh.youshangdache.model.entity.order.*;
 import com.qrh.youshangdache.model.enums.OrderStatusEnum;
+import com.qrh.youshangdache.model.enums.ProfitsharingStatusEnum;
 import com.qrh.youshangdache.model.form.order.OrderInfoForm;
 import com.qrh.youshangdache.model.form.order.StartDriveForm;
 import com.qrh.youshangdache.model.form.order.UpdateOrderBillForm;
@@ -38,8 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -62,8 +62,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderProfitsharingMapper orderProfitsharingMapper;
     @Resource
     private RabbitService rabbitService;
-    @Resource
-    private ThreadPoolExecutor threadPoolExecutor;
 
     /**
      * 修改分账信息的状态
@@ -81,7 +79,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         updateQueryWrapper.eq(OrderProfitsharing::getOrderId, orderInfo.getId());
         //更新字段
         OrderProfitsharing updateOrderProfitsharing = new OrderProfitsharing();
-        updateOrderProfitsharing.setStatus(2);
+        updateOrderProfitsharing.setStatus(ProfitsharingStatusEnum.SHARED);
         orderProfitsharingMapper.update(updateOrderProfitsharing, updateQueryWrapper);
     }
 
@@ -94,7 +92,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = {Exception.class})
     public void systemCancelOrder(Long orderId) {
         OrderStatusEnum orderStatus = this.getOrderStatus(orderId);
-        if (null != orderStatus && orderStatus == OrderStatusEnum.WAITING_ACCEPT) {
+        if (orderStatus == OrderStatusEnum.WAITING_ACCEPT) {
             //取消订单
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setId(orderId);
@@ -103,7 +101,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (row == 1) {
                 //记录日志
                 this.log(orderInfo.getId(), orderInfo.getStatus());
-
                 //删除redis订单标识
                 stringRedisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK);
             } else {
@@ -280,55 +277,44 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     /**
      * 结束代驾服务更新订单账单
      *
-     * @param updateOrderBillForm 账单
+     * @param form 账单
      * @return true
      */
     @Override
-    @Transactional(rollbackFor = {Exception.class})
-    public Boolean endDrive(UpdateOrderBillForm updateOrderBillForm) {
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean endDrive(UpdateOrderBillForm form) {
         LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, updateOrderBillForm.getOrderId())
-                .eq(OrderInfo::getDriverId, updateOrderBillForm.getDriverId());
+                .eq(OrderInfo::getId, form.getOrderId())
+                .eq(OrderInfo::getDriverId, form.getDriverId());
 
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setStatus(OrderStatusEnum.END_SERVICE);
-        orderInfo.setRealAmount(updateOrderBillForm.getTotalAmount());
-        orderInfo.setFavourFee(updateOrderBillForm.getFavourFee());
-        orderInfo.setRealDistance(updateOrderBillForm.getRealDistance());
+        orderInfo.setRealAmount(form.getTotalAmount());
+        orderInfo.setFavourFee(form.getFavourFee());
+        orderInfo.setRealDistance(form.getRealDistance());
         orderInfo.setEndServiceTime(new Date());
 
-        int update = orderInfoMapper.update(orderInfo, wrapper);
-
-        if (update > 0) {
-            CompletableFuture<Void> orderBillCF = CompletableFuture.runAsync(() -> {
-                OrderBill orderBill = new OrderBill();
-                BeanUtils.copyProperties(updateOrderBillForm, orderBill);
-
-                orderBill.setOrderId(updateOrderBillForm.getOrderId());
-                orderBill.setPayAmount(updateOrderBillForm.getTotalAmount());
-                orderBillMapper.insert(orderBill);
-            }, threadPoolExecutor);
-
-            CompletableFuture<Void> orderProfitsharingCF = CompletableFuture.runAsync(() -> {
-                OrderProfitsharing orderProfitsharing = new OrderProfitsharing();
-                BeanUtils.copyProperties(updateOrderBillForm, orderProfitsharing);
-
-                orderProfitsharing.setOrderId(updateOrderBillForm.getOrderId());
-                orderProfitsharing.setRuleId(updateOrderBillForm.getProfitsharingRuleId());
-                orderProfitsharing.setStatus(1);
-
-                orderProfitsharingMapper.insert(orderProfitsharing);
-            }, threadPoolExecutor);
-
-            try {
-                CompletableFuture.allOf(orderBillCF, orderProfitsharingCF).get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            return true;
-        } else {
+        int rows = orderInfoMapper.update(orderInfo, wrapper);
+        if (rows == 0) {
             throw new GuiguException(ResultCodeEnum.DATA_ERROR);
         }
+
+        OrderBill orderBill = new OrderBill();
+        BeanUtils.copyProperties(form, orderBill);
+        orderBill.setPayAmount(form.getTotalAmount());
+        orderBill.setDistanceFee(safeMultiply(form.getExceedDistance(), form.getExceedDistancePrice()));
+        orderBill.setWaitFee(safeMultiply(form.getExceedWaitMinute(), form.getExceedWaitMinutePrice()));
+        orderBill.setLongDistanceFee(safeMultiply(form.getExceedLongDistance(), form.getExceedLongDistancePrice()));
+        orderBill.setRewardFee(form.getRewardAmount());
+        orderBillMapper.insert(orderBill);
+
+        OrderProfitsharing orderProfitsharing = new OrderProfitsharing();
+        BeanUtils.copyProperties(form, orderProfitsharing);
+        orderProfitsharing.setRuleId(form.getProfitsharingRuleId());
+        orderProfitsharing.setStatus(ProfitsharingStatusEnum.NOT_SHARED);
+        orderProfitsharingMapper.insert(orderProfitsharing);
+
+        return true;
     }
 
     /**
@@ -447,24 +433,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 OrderStatusEnum.DRIVER_ARRIVED,
                 OrderStatusEnum.UPDATE_CAR_INFO,
                 OrderStatusEnum.START_SERVICE,
-                OrderStatusEnum.END_SERVICE,
-                OrderStatusEnum.ORDER_UNPAID
+                OrderStatusEnum.END_SERVICE
         };
-        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, driverId)
-                .in(OrderInfo::getStatus, statusArray)
-                .orderByDesc(OrderInfo::getId)
-                .last(" limit 1");
-        OrderInfo orderInfo = orderInfoMapper.selectOne(queryWrapper);
-        CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
-        if (orderInfo != null) {
-            currentOrderInfoVo.setOrderId(orderInfo.getId());
-            currentOrderInfoVo.setStatus(orderInfo.getStatus());
-            currentOrderInfoVo.setIsHasCurrentOrder(true);
-        } else {
-            currentOrderInfoVo.setIsHasCurrentOrder(false);
-        }
-        return currentOrderInfoVo;
+        return queryCurrentOrder(OrderInfo::getDriverId, driverId, statusArray);
     }
 
     /**
@@ -487,13 +458,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 OrderStatusEnum.END_SERVICE,
                 OrderStatusEnum.ORDER_UNPAID
         };
-        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getCustomerId, customerId)
+        return queryCurrentOrder(OrderInfo::getCustomerId, customerId, statusArray);
+    }
+
+    /**
+     * 查询用户当前是否有未完成的订单
+     *
+     * @param idField     订单关联用户ID的字段
+     * @param userId      用户ID
+     * @param statusArray 视为未完成的状态列表
+     * @return 当前订单信息
+     */
+    private CurrentOrderInfoVo queryCurrentOrder(SFunction<OrderInfo, ?> idField, Long userId, OrderStatusEnum[] statusArray) {
+        OrderInfo orderInfo = orderInfoMapper.selectOne(new LambdaQueryWrapper<OrderInfo>()
+                .eq(idField, userId)
                 .in(OrderInfo::getStatus, statusArray)
                 .orderByDesc(OrderInfo::getId)
-                .last(" limit 1");
-
-        OrderInfo orderInfo = orderInfoMapper.selectOne(queryWrapper);
+                .last(" limit 1"));
         CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
         if (orderInfo != null) {
             currentOrderInfoVo.setOrderId(orderInfo.getId());
@@ -628,6 +609,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         } catch (Exception e) {
             throw new GuiguException(ResultCodeEnum.DELAY_MESSAGE_FAIL);
         }
+    }
+
+    /**
+     * 安全乘法，任一参数为null时返回ZERO
+     */
+    private BigDecimal safeMultiply(BigDecimal a, BigDecimal b) {
+        if (a == null || b == null) {
+            return BigDecimal.ZERO;
+        }
+        return a.multiply(b);
+    }
+
+    private BigDecimal safeMultiply(Integer intVal, BigDecimal b) {
+        if (intVal == null || b == null) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(intVal).multiply(b);
     }
 
     /**

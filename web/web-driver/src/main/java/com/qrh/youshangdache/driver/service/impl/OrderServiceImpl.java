@@ -43,6 +43,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -117,7 +118,7 @@ public class OrderServiceImpl implements OrderService {
         CompletableFuture.allOf(orderInfoCF, orderServiceLastLocationVoCF).join();
 
         //获取数据
-        OrderInfo orderInfo = orderInfoCF.get();
+        OrderInfo orderInfo = orderInfoCF.get(10, TimeUnit.SECONDS);
         OrderServiceLastLocationVo orderServiceLastLocationVo = orderServiceLastLocationVoCF.get();
 
         //司机的位置与代驾终点位置的距离
@@ -136,17 +137,14 @@ public class OrderServiceImpl implements OrderService {
                 () -> locationFeignClient.calculateOrderRealDistance(orderFeeForm.getOrderId()).getData(),
                 threadPoolExecutor);
 
-
         //4.计算代驾实际费用
         CompletableFuture<FeeRuleResponseVo> feeRuleResponseVoCF = realDistanceCF.thenApplyAsync((realDistance) -> {
             Integer waitMinute = Math.abs((int) ((orderInfo.getArriveTime().getTime() - orderInfo.getAcceptTime().getTime()) / (1000 * 60)));
-
             FeeRuleRequestForm feeRuleRequestForm=FeeRuleRequestForm.builder()
                     .distance(realDistance)
                     .startTime(orderInfo.getStartServiceTime())
                     .waitMinute(waitMinute)
                     .build();
-
             FeeRuleResponseVo feeRuleResponseVo = feeRuleFeignClient.calculateOrderFee(feeRuleRequestForm).getData();
             //订单总金额 需加上 路桥费、停车费、其他费用、乘客好处费
             BigDecimal totalAmount = feeRuleResponseVo.getTotalAmount()
@@ -192,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
                 orderNumCF,
                 rewardRuleResponseVoCF,
                 profitsharingRuleResponseVoCF
-        ).join();
+        ).get(10, TimeUnit.SECONDS);
 
         //获取执行结果
         BigDecimal realDistance = realDistanceCF.get();
@@ -293,7 +291,7 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderBillVo orderBillVo = null;
         OrderProfitsharingVo orderProfitsharingVo = null;
-        if (orderInfo.getStatus() >= OrderStatusEnum.END_SERVICE.getCode()) {
+        if (orderInfo.getStatus().compareTo(OrderStatusEnum.END_SERVICE)>=0) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId).getData();
             orderProfitsharingVo = orderInfoFeignClient.getOrderProfitsharing(orderId).getData();
         }

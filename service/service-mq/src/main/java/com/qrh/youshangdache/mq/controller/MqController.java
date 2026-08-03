@@ -23,22 +23,11 @@ public class MqController {
     /**
      * 消息发送
      */
-    //http://localhost:8282/mq/sendConfirm
     @GetMapping("/sendConfirm")
     public Result sendConfirm() {
         rabbitService.sendMessage("exchange.confirm", "routing.confirm", "来人了，开始接客吧！");
         return Result.ok();
     }
-
-//    /**
-//     * 消息发送延迟消息：基于死信实现
-//     */
-//    @GetMapping("/sendDeadLetterMsg")
-//    public Result sendDeadLetterMsg() {
-//        rabbitService.sendMessage(DeadLetterMqConfig.EXCHANGE_DEAD, DeadLetterMqConfig.ROUTING_DEAD_1, "我是延迟消息");
-//        log.info("基于死信发送延迟消息成功");
-//        return Result.ok();
-//    }
 
     /**
      * 消息发送延迟消息：基于延迟插件使用

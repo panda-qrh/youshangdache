@@ -1,14 +1,12 @@
 package com.qrh.youshangdache.mq.receiver;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
-import com.qrh.youshangdache.mq.config.DelayedMqConfig;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;

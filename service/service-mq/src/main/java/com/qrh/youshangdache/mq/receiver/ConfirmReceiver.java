@@ -21,14 +21,10 @@ public class ConfirmReceiver {
 
     @SneakyThrows
     @RabbitListener(bindings = @QueueBinding(
-            exchange = @Exchange(value = "exchange.confirm", durable = Exchange.TRUE),
+            exchange = @Exchange(value = "exchange.confirm"),
             value = @Queue(value = "queue.confirm", durable = "true"),
             key = "routing.confirm"))
     public void process(Message message, Channel channel) {
-
-        System.out.println("RabbitListener:" + new String(message.getBody()));
-
-        // false 确认一个消息，true 批量确认
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
     }
 
@@ -39,10 +35,9 @@ public class ConfirmReceiver {
      * @param message
      * @param channel
      */
-//    @RabbitListener(queues = {DeadLetterMqConfig.QUEUE_DEAD_2})
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "queue. dead.2", durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "exchange. dead"),
+            value = @Queue(value = "queue.dead.2", durable = "true", autoDelete = "false"),
+            exchange = @Exchange(value = "exchange.dead"),
             key = "routing.dead.2"
     ))
     public void getDeadLetterMsg(String msg, Message message, Channel channel) {
