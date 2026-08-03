@@ -102,7 +102,7 @@
         <!-- common-log/spring-security 原有依赖 -->
         <dependency>
             <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-system-client</artifactId>
+            <artifactId>service-client</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>

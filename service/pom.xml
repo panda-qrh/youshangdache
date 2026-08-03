@@ -33,37 +33,7 @@
         </dependency>
         <dependency>
             <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-system-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-coupon-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-driver-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-order-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-customer-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-rules-client</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-map-client</artifactId>
+            <artifactId>service-client</artifactId>
             <version>1.0</version>
         </dependency>
 
