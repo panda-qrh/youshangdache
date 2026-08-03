@@ -34,7 +34,7 @@ public class LocationController {
      */
     @Operation(summary = "开启接单服务：更新司机经纬度位置")
     @PostMapping("/updateDriverLocation")
-    public Void updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
+    public void updateDriverLocation(@RequestBody UpdateDriverLocationForm updateDriverLocationForm) {
         locationService.updateDriverLocation(updateDriverLocationForm);
     }
 
@@ -46,7 +46,7 @@ public class LocationController {
      */
     @Operation(summary = "关闭接单服务：删除司机经纬度位置")
     @DeleteMapping("/removeDriverLocation/{driverId}")
-    public Void removeDriverLocation(@PathVariable Long driverId) {
+    public void removeDriverLocation(@PathVariable Long driverId) {
         locationService.removeDriverLocation(driverId);
     }
 

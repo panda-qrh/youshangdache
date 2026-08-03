@@ -48,8 +48,8 @@ public class CustomerInfoController {
 	 */
 	@Operation(summary = "更新客户微信手机号码")
 	@GetMapping("/updateWxPhoneNumber")
-	public Void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
-		customerInfoService.updateWxPhoneNumber(updateWxPhoneForm);
+	public void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
+		 customerInfoService.updateWxPhoneNumber(updateWxPhoneForm);
 	}
 	@Operation(summary = "获取客户的openId")
 	@GetMapping("/getCustomerOpenId/{customerId}")

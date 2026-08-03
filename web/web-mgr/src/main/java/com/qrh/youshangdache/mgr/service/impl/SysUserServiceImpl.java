@@ -4,7 +4,7 @@ import com.qrh.youshangdache.mgr.service.SysUserService;
 import com.qrh.youshangdache.model.entity.system.SysUser;
 import com.qrh.youshangdache.model.query.system.SysUserQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
-import com.qrh.youshangdache.system.SysUserFeignClient;
+import com.qrh.youshangdache.system.feign.SysUserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

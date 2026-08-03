@@ -2,7 +2,7 @@ package com.qrh.youshangdache.mgr.service.impl;
 
 import com.qrh.youshangdache.mgr.service.SysDeptService;
 import com.qrh.youshangdache.model.entity.system.SysDept;
-import com.qrh.youshangdache.system.SysDeptFeignClient;
+import com.qrh.youshangdache.system.feign.SysDeptFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

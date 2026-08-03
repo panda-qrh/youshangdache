@@ -4,7 +4,7 @@ import com.qrh.youshangdache.mgr.service.SysLoginLogService;
 import com.qrh.youshangdache.model.entity.system.SysLoginLog;
 import com.qrh.youshangdache.model.query.system.SysLoginLogQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
-import com.qrh.youshangdache.system.SysLoginLogFeignClient;
+import com.qrh.youshangdache.system.feign.SysLoginLogFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

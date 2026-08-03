@@ -35,7 +35,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- 服务调用feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -93,19 +92,16 @@
             <artifactId>spring-cloud-starter-bus-amqp</artifactId>
         </dependency>
 
-        <!-- spring-security 原有依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- common-log/spring-security 原有依赖 -->
         <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-client</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

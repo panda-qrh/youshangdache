@@ -1,12 +1,12 @@
 package com.qrh.youshangdache.customer.service.impl;
 
 import com.qrh.youshangdache.common.constant.RedisConstant;
-import com.qrh.youshangdache.customer.CustomerInfoFeignClient;
+import com.qrh.youshangdache.customer.feign.CustomerInfoFeignClient;
 import com.qrh.youshangdache.customer.service.CustomerService;
 import com.qrh.youshangdache.model.form.customer.UpdateWxPhoneForm;
 import com.qrh.youshangdache.model.vo.customer.CustomerLoginVo;
 import com.qrh.youshangdache.model.vo.order.CurrentOrderInfoVo;
-import com.qrh.youshangdache.order.OrderInfoFeignClient;
+import com.qrh.youshangdache.order.feign.OrderInfoFeignClient;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;

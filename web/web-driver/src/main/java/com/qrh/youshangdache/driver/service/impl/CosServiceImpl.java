@@ -1,6 +1,6 @@
 package com.qrh.youshangdache.driver.service.impl;
 
-import com.qrh.youshangdache.driver.CosFeignClient;
+import com.qrh.youshangdache.driver.feign.CosFeignClient;
 import com.qrh.youshangdache.driver.service.CosService;
 import com.qrh.youshangdache.model.vo.driver.CosUploadVo;
 import jakarta.annotation.Resource;

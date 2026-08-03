@@ -9,7 +9,7 @@ import com.qrh.youshangdache.model.enums.LoginStatusEnum;
 import com.qrh.youshangdache.model.entity.system.SysLoginLog;
 import com.qrh.youshangdache.model.vo.system.LoginVo;
 import com.qrh.youshangdache.security.custom.CustomUser;
-import com.qrh.youshangdache.system.SysLoginLogFeignClient;
+import com.qrh.youshangdache.system.feign.SysLoginLogFeignClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

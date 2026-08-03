@@ -4,7 +4,7 @@ import com.qrh.youshangdache.mgr.service.SysPostService;
 import com.qrh.youshangdache.model.entity.system.SysPost;
 import com.qrh.youshangdache.model.query.system.SysPostQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
-import com.qrh.youshangdache.system.SysPostFeignClient;
+import com.qrh.youshangdache.system.feign.SysPostFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

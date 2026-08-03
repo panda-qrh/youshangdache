@@ -5,7 +5,7 @@ import com.qrh.youshangdache.model.entity.system.SysRole;
 import com.qrh.youshangdache.model.query.system.SysRoleQuery;
 import com.qrh.youshangdache.model.vo.base.PageVo;
 import com.qrh.youshangdache.model.vo.system.AssginRoleVo;
-import com.qrh.youshangdache.system.SysRoleFeignClient;
+import com.qrh.youshangdache.system.feign.SysRoleFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.qrh.youshangdache.common.result.Result;
 import com.qrh.youshangdache.common.util.AuthContextHolder;
 import com.qrh.youshangdache.model.form.system.LoginForm;
-import com.qrh.youshangdache.system.SecurityLoginFeignClient;
+import com.qrh.youshangdache.system.feign.SecurityLoginFeignClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
