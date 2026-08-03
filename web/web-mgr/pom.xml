@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.qrh.youshangdache</groupId>
+		<groupId>com.youshangdache</groupId>
 		<artifactId>web</artifactId>
 		<version>1.0</version>
 	</parent>
@@ -17,22 +17,10 @@
 	<description>web-mgr</description>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.qrh.youshangdache</groupId>
-			<artifactId>service-util</artifactId>
-			<version>1.0</version>
-		</dependency>
+
 	</dependencies>
 
 
-	<build>
-		<finalName>web-mgr</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	
 
 </project>

@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 
-<mapper namespace="com.qrh.youshangdache.coupon.mapper.CouponInfoMapper">
+<mapper namespace="com.youshangdache.coupon.mapper.CouponInfoMapper">
 
-    <resultMap id="couponInfoMap" type="com.qrh.youshangdache.model.entity.coupon.CouponInfo" autoMapping="true">
+    <resultMap id="couponInfoMap" type="com.youshangdache.model.entity.coupon.CouponInfo" autoMapping="true">
     </resultMap>
 
     <!-- 用于select查询公用抽取的列 -->
@@ -30,7 +30,7 @@
 
     </sql>
 
-    <select id="findNoReceivePage" resultType="com.qrh.youshangdache.model.vo.coupon.NoReceiveCouponVo">
+    <select id="findNoReceivePage" resultType="com.youshangdache.model.vo.coupon.NoReceiveCouponVo">
         select info.id,
                info.coupon_type,
                info.name,
@@ -51,7 +51,7 @@
         order by info.id desc
     </select>
 
-    <select id="findNoUsePage" resultType="com.qrh.youshangdache.model.vo.coupon.NoUseCouponVo">
+    <select id="findNoUsePage" resultType="com.youshangdache.model.vo.coupon.NoUseCouponVo">
         select info.id,
                info.coupon_type,
                info.name,
@@ -71,7 +71,7 @@
         order by cstr.id desc
     </select>
 
-    <select id="findUsedPage" resultType="com.qrh.youshangdache.model.vo.coupon.UsedCouponVo">
+    <select id="findUsedPage" resultType="com.youshangdache.model.vo.coupon.UsedCouponVo">
         select info.id,
                info.coupon_type,
                info.name,
@@ -105,7 +105,7 @@
           and receive_count &lt; publish_count
     </update>
 
-    <select id="findNoUseList" resultType="com.qrh.youshangdache.model.vo.coupon.NoUseCouponVo">
+    <select id="findNoUseList" resultType="com.youshangdache.model.vo.coupon.NoUseCouponVo">
         select info.id,
                info.coupon_type,
                info.name,

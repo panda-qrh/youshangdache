@@ -4,9 +4,9 @@
         "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
 
 
-<mapper namespace="com.qrh.youshangdache.driver.mapper.DriverAccountMapper">
+<mapper namespace="com.youshangdache.driver.mapper.DriverAccountMapper">
 
-    <resultMap id="userAccountMap" type="com.qrh.youshangdache.model.entity.driver.DriverAccount" autoMapping="true">
+    <resultMap id="userAccountMap" type="com.youshangdache.model.entity.driver.DriverAccount" autoMapping="true">
     </resultMap>
 
     <!-- 用于select查询公用抽取的列 -->

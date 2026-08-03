@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.qrh.youshangdache</groupId>
+        <groupId>com.youshangdache</groupId>
         <artifactId>youshangdache-parent</artifactId>
         <version>1.0</version>
     </parent>
@@ -16,13 +16,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-util</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
+            <groupId>com.youshangdache</groupId>
             <artifactId>model</artifactId>
             <version>1.0</version>
         </dependency>

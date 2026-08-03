@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.qrh.youshangdache</groupId>
+        <groupId>com.youshangdache</groupId>
         <artifactId>youshangdache-parent</artifactId>
         <version>1.0</version>
     </parent>
@@ -21,12 +21,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-util</artifactId>
+            <groupId>com.youshangdache</groupId>
+            <artifactId>common-util</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
+            <groupId>com.youshangdache</groupId>
             <artifactId>service-client</artifactId>
             <version>1.0</version>
         </dependency>
@@ -61,6 +61,15 @@
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>

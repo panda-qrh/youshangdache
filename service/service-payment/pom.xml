@@ -3,7 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.qrh.youshangdache</groupId>
+        <groupId>com.youshangdache</groupId>
         <artifactId>service</artifactId>
         <version>1.0</version>
     </parent>
@@ -19,8 +19,8 @@
             <artifactId>wechatpay-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.qrh.youshangdache</groupId>
-            <artifactId>service-util</artifactId>
+            <groupId>com.youshangdache</groupId>
+            <artifactId>common-util</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -35,13 +35,5 @@
 
     </dependencies>
 
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    
 </project>
