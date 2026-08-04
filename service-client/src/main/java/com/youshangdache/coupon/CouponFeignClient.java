@@ -71,8 +71,8 @@ public interface CouponFeignClient {
             @PathVariable("limit") Long limit);
 
     @GetMapping("/coupon/info/findAvailableCoupon/{customerId}/{orderAmount}")
-    public List<AvailableCouponVo> findAvailableCoupon(@PathVariable Long customerId, @PathVariable BigDecimal orderAmount);
+    List<AvailableCouponVo> findAvailableCoupon(@PathVariable Long customerId, @PathVariable BigDecimal orderAmount);
 
     @PostMapping("/useCoupon")
-    public BigDecimal useCoupon(@RequestBody UseCouponForm useCouponForm);
+    BigDecimal useCoupon(@RequestBody UseCouponForm useCouponForm);
 }

@@ -146,7 +146,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
             }
 
         } catch (TencentCloudSDKException e) {
-            System.out.println(e.toString());
+            log.error("e: ", e);
         }
         throw new GuiguException(ResultCodeEnum.DATA_ERROR);
     }
@@ -163,8 +163,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         VerifyFaceRequest request = new VerifyFaceRequest();
         request.setImage(driverFaceModelForm.getImageBase64());
         request.setPersonId(driverFaceModelForm.getDriverId().toString());
-        VerifyFaceResponse resp = client.VerifyFace(request);
-        return resp;
+        return client.VerifyFace(request);
     }
 
     /**
@@ -198,36 +197,27 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         DriverInfo driverInfo = this.getById(driverFaceModelForm.getDriverId());
         try {
             Credential cred = new Credential(tencentCloudProperties.getSecretId(), tencentCloudProperties.getSecretKey());
-            // 实例化一个http选项，可选的，没有特殊需求可以跳过
             HttpProfile httpProfile = new HttpProfile();
             httpProfile.setEndpoint("iai.tencentcloudapi.com");
-            // 实例化一个client选项，可选的，没有特殊需求可以跳过
             ClientProfile clientProfile = new ClientProfile();
             clientProfile.setHttpProfile(httpProfile);
-            // 实例化要请求产品的client对象,clientProfile是可选的
             IaiClient client = new IaiClient(cred, tencentCloudProperties.getRegion(), clientProfile);
-            // 实例化一个请求对象,每个接口都会对应一个request对象
             CreatePersonRequest req = new CreatePersonRequest();
             req.setGroupId(tencentCloudProperties.getPersionGroupId());
-            //基本信息
             req.setPersonId(String.valueOf(driverInfo.getId()));
             req.setGender(Long.parseLong(driverInfo.getGender()));
             req.setQualityControl(4L);
             req.setUniquePersonControl(4L);
             req.setPersonName(driverInfo.getName());
             req.setImage(driverFaceModelForm.getImageBase64());
-
-            // 返回的resp是一个CreatePersonResponse的实例，与请求对象对应
             CreatePersonResponse resp = client.CreatePerson(req);
-            // 输出json格式的字符串回包
             System.out.println(CreatePersonResponse.toJsonString(resp));
             if (StringUtils.hasText(resp.getFaceId())) {
-                //人脸校验必要参数，保存到数据库表
                 driverInfo.setFaceModelId(resp.getFaceId());
                 this.updateById(driverInfo);
             }
         } catch (TencentCloudSDKException e) {
-            System.out.println(e.toString());
+            log.error("e: ", e);
             return false;
         }
         return true;
@@ -398,8 +388,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
 
     private Boolean detectLiveFace(String img) {
         try {
-            Credential cred = new Credential(tencentCloudProperties.getSecretId(),
-                    tencentCloudProperties.getSecretKey());
+            Credential cred = new Credential(tencentCloudProperties.getSecretId(),tencentCloudProperties.getSecretKey());
             HttpProfile httpProfile = new HttpProfile();
             httpProfile.setEndpoint("iai.tencentcloudapi.com");
             ClientProfile clientProfile = new ClientProfile();
@@ -414,7 +403,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
                 return true;
             }
         } catch (TencentCloudSDKException e) {
-            e.printStackTrace();
+           log.error("e ",e);
         }
         return false;
     }

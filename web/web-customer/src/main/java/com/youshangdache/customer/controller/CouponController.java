@@ -24,7 +24,6 @@ import java.util.List;
 @Tag(name = "优惠券活动接口管理")
 @RestController
 @RequestMapping(value = "/coupon")
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class CouponController {
     @Autowired
     private CouponService couponService;
@@ -44,7 +43,6 @@ public class CouponController {
     public Result<PageVo<NoUseCouponVo>> findNoUsePage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
-
             @Parameter(name = "limit", description = "每页记录数", required = true)
             @PathVariable Long limit) {
         Long customerId = AuthContextHolder.getUserId();

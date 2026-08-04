@@ -50,7 +50,7 @@ public interface LocationFeignClient {
      * @return 附近司机集合
      */
     @DeleteMapping("/map/location/searchNearByDriver")
-    public List<NearByDriverVo> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm);
+    List<NearByDriverVo> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm);
 
     /**
      * 司机赶往代驾起始点，更新订单地址到缓存
@@ -63,7 +63,7 @@ public interface LocationFeignClient {
      * @return true
      */
     @DeleteMapping("/map/location/updateOrderLocationToCache")
-    public Boolean updateOrderLocationToCache(@RequestBody UpdateOrderLocationForm updateOrderLocationForm);
+    Boolean updateOrderLocationToCache(@RequestBody UpdateOrderLocationForm updateOrderLocationForm);
 
     /**
      * 司机赶往代驾起始点，更新订单经纬度位置
@@ -76,7 +76,7 @@ public interface LocationFeignClient {
      * @return 订单的坐标
      */
     @GetMapping("/map/location/getCacheOrderLocation/{orderId}")
-    public OrderLocationVo getCacheOrderLocation(@PathVariable Long orderId);
+    OrderLocationVo getCacheOrderLocation(@PathVariable Long orderId);
 
     /**
      * 批量保存代驾服务订单位置
@@ -89,7 +89,7 @@ public interface LocationFeignClient {
      * @return true
      */
     @PostMapping("/map/location/saveOrderServiceLocation")
-    public Boolean saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderServiceLocationForms);
+    Boolean saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderServiceLocationForms);
 
     /**
      * 代驾服务：获取订单服务最后一个位置信息
@@ -102,7 +102,7 @@ public interface LocationFeignClient {
      * @return 最后一个坐标位置
      */
     @GetMapping("/map/location/getOrderServiceLastLocation/{orderId}")
-    public OrderServiceLastLocationVo getOrderServiceLastLocation(@PathVariable Long orderId);
+    OrderServiceLastLocationVo getOrderServiceLastLocation(@PathVariable Long orderId);
 
     /**
      * 代驾服务：计算订单实际里程
@@ -115,6 +115,6 @@ public interface LocationFeignClient {
      * @return 订单实际的公里数
      */
     @GetMapping("/map/location/calculateOrderRealDistance/{orderId}")
-    public BigDecimal calculateOrderRealDistance(@PathVariable Long orderId);
+    BigDecimal calculateOrderRealDistance(@PathVariable Long orderId);
 
 }

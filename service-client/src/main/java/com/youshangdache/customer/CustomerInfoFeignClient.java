@@ -17,7 +17,7 @@ public interface CustomerInfoFeignClient {
      * @return 用户id
      */
     @GetMapping("/customer/info/login/{code}")
-    public Long login(@PathVariable String code);
+    Long login(@PathVariable String code);
 
     /**
      * 获取用户的登录信息
@@ -26,7 +26,7 @@ public interface CustomerInfoFeignClient {
      * @return 用户登录后的基本信息
      */
     @GetMapping("/customer/info/getCustomerLoginInfo/{customerId}")
-    public CustomerLoginVo getCustomerInfo(@PathVariable Long customerId);
+    CustomerLoginVo getCustomerInfo(@PathVariable Long customerId);
 
     /**
      * 绑定用户手机号
@@ -36,8 +36,8 @@ public interface CustomerInfoFeignClient {
      * @return true绑定 | false未绑定
      */
     @GetMapping("/customer/info/updateWxPhoneNumber")
-    public Void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm);
+    Void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm);
 
     @GetMapping("/customer/info/getCustomerOpenId/{customerId}")
-    public String getCustomerOpenId(@PathVariable Long customerId);
+    String getCustomerOpenId(@PathVariable Long customerId);
 }

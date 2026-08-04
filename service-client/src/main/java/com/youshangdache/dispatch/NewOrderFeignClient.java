@@ -20,7 +20,7 @@ public interface NewOrderFeignClient {
      * @return 该任务调度的id
      */
     @PostMapping("/newOrder/addAndStartTask")
-    public Long addAndStartTask(@RequestBody NewOrderTaskVo newOrderTaskVo);
+    Long addAndStartTask(@RequestBody NewOrderTaskVo newOrderTaskVo);
 
     /**
      * 查询司机的最新订单数据
@@ -29,7 +29,7 @@ public interface NewOrderFeignClient {
      * @return
      */
     @PostMapping("/findNewOrderQueueData/{driverId}")
-    public List<NewOrderDataVo> findNewOrderQueueData(@PathVariable Long driverId);
+    List<NewOrderDataVo> findNewOrderQueueData(@PathVariable Long driverId);
 
     /**
      * 当司机接单成功后，就需要清空临时队列，释放系统空间
@@ -38,5 +38,5 @@ public interface NewOrderFeignClient {
      * @return 成功true，失败false
      */
     @PostMapping("/clearNewOrderQueueData/{driverId}")
-    public Boolean clearNewOrderQueueData(@PathVariable Long driverId);
+    Boolean clearNewOrderQueueData(@PathVariable Long driverId);
 }

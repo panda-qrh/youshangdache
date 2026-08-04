@@ -66,7 +66,6 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public BigDecimal calculateOrderRealDistance(Long orderId) {
         // 根据订单id获取代驾订单位置信息，根据创建时间升序排序
-        //查询mongdb
         List<OrderServiceLocation> list = orderServiceLocationRepository.findByOrderIdOrderByCreateTimeAsc(orderId);
         //返回查询订单位置信息list集合
         //把list集合便利，得到每个位置信息,计算两个地点的位置
@@ -87,7 +86,6 @@ public class LocationServiceImpl implements LocationService {
         //todo 为了测试，不好测试实际代驾距离，模拟数据
         if (realDistance == 0) {
             return orderInfoFeignClient.getOrderInfoByOrderId(orderId)
-                    
                     .getExpectAmount()
                     .add(BigDecimal.valueOf(realDistance));
         }
@@ -113,7 +111,9 @@ public class LocationServiceImpl implements LocationService {
                 OrderServiceLocation.class
         );
         OrderServiceLastLocationVo orderServiceLastLocationVo = new OrderServiceLastLocationVo();
-        BeanUtils.copyProperties(orderServiceLocation, orderServiceLastLocationVo);
+        if (orderServiceLocation != null) {
+            BeanUtils.copyProperties(orderServiceLocation, orderServiceLastLocationVo);
+        }
         return orderServiceLastLocationVo;
     }
 

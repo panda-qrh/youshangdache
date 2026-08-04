@@ -16,5 +16,5 @@ public interface WxPayFeignClient {
     WxPrepayVo createWxPayment(@RequestBody PaymentInfoForm paymentInfoForm);
 
     @GetMapping("/payment/wxPay/queryPayStatus/{orderNo}")
-    public Boolean queryPayStatus(@PathVariable String orderNo);
+    Boolean queryPayStatus(@PathVariable String orderNo);
 }

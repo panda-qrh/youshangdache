@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface DriverAccountFeignClient {
 
     @PostMapping("/driver/account/transfer")
-    public Boolean transfer(@RequestBody TransferForm transferForm);
+    Boolean transfer(@RequestBody TransferForm transferForm);
 
 
 }

@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface RewardRuleFeignClient {
 
     @PostMapping("/rules/reward/calculateOrderRewardFee")
-    public RewardRuleResponseVo calculateOrderRewardFee(@RequestBody RewardRuleRequestForm rewardRuleRequestForm);
-
-
+    RewardRuleResponseVo calculateOrderRewardFee(@RequestBody RewardRuleRequestForm rewardRuleRequestForm);
 
 
 }

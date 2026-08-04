@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 
 @FeignClient(value = "service-order", path = "/order/info")
-public interface OrderInfoFeignClient {
+interface OrderInfoFeignClient {
     /**
      * 保存订单信息
      *
@@ -46,7 +46,7 @@ public interface OrderInfoFeignClient {
      * @return 当前用户正在进行的订单信息
      */
     @GetMapping("/searchCustomerCurrentOrder/{customerId}")
-    public CurrentOrderInfoVo searchCustomerCurrentOrder(@PathVariable Long customerId);
+    CurrentOrderInfoVo searchCustomerCurrentOrder(@PathVariable Long customerId);
 
     /**
      * 查找司机端当前订单
@@ -58,7 +58,7 @@ public interface OrderInfoFeignClient {
      * @return 司机当前正在执行的订单数据
      */
     @GetMapping("/searchDriverCurrentOrder/{driverId}")
-    public CurrentOrderInfoVo searchDriverCurrentOrder(@PathVariable Long driverId);
+    CurrentOrderInfoVo searchDriverCurrentOrder(@PathVariable Long driverId);
 
     /**
      * 司机抢单
@@ -73,7 +73,7 @@ public interface OrderInfoFeignClient {
      * @return true抢单成功，否则抛出订单不存在或抢单失败异常
      */
     @GetMapping("/robNewOrder/{driverId}/{orderId}")
-    public Boolean robNewOrder(@PathVariable Long driverId, @PathVariable Long orderId);
+    Boolean robNewOrder(@PathVariable Long driverId, @PathVariable Long orderId);
 
     /**
      * 获取执行中的订单
@@ -82,7 +82,7 @@ public interface OrderInfoFeignClient {
      * @return 执行中的订单的数据
      */
     @GetMapping("/getOrderInfo/{orderId}")
-    public OrderInfo getOrderInfoByOrderId(@PathVariable Long orderId);
+    OrderInfo getOrderInfoByOrderId(@PathVariable Long orderId);
 
     /**
      * 司机到达起始位置
@@ -92,7 +92,7 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @GetMapping("/driverArriveStartLocation/{orderId}/{driverId}")
-    public Boolean driverArriveStartLocation(@PathVariable Long orderId, @PathVariable Long driverId);
+    Boolean driverArriveStartLocation(@PathVariable Long orderId, @PathVariable Long driverId);
 
     /**
      * 更新代驾车辆信息
@@ -105,7 +105,8 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @PostMapping("/updateOrderCart")
-    public Boolean updateOrderCart(@RequestBody UpdateOrderCartForm updateOrderCartForm);
+    Boolean updateOrderCart(@RequestBody UpdateOrderCartForm updateOrderCartForm);
+
     /**
      * 开始代驾服务
      *
@@ -113,7 +114,8 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @PostMapping("/startDrive")
-    public Boolean startDrive(@RequestBody StartDriveForm startDriveForm);
+    Boolean startDrive(@RequestBody StartDriveForm startDriveForm);
+
     /**
      * 根据时间段获取订单数
      *
@@ -122,7 +124,8 @@ public interface OrderInfoFeignClient {
      * @return 订单数量
      */
     @GetMapping("/getOrderNumByTime/{startTime}/{endTime}")
-    public Long getOrderNumByTime(@PathVariable String startTime, @PathVariable String endTime);
+    Long getOrderNumByTime(@PathVariable String startTime, @PathVariable String endTime);
+
     /**
      * 结束代驾服务，更新订单账单
      *
@@ -130,31 +133,33 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @PostMapping("/endDrive")
-    public Boolean endDrive(@RequestBody UpdateOrderBillForm updateOrderBillForm);
+    Boolean endDrive(@RequestBody UpdateOrderBillForm updateOrderBillForm);
+
     /**
      * 获取乘客订单分页列表
      *
      * @param customerId 用户id
-     * @param limit 页限制
-     * @param page 页码
+     * @param limit      页限制
+     * @param page       页码
      * @return 订单分页
      */
     @GetMapping("/findCustomerOrderPage/{customerId}/{page}/{limit}")
-    public PageVo findCustomerOrderPage(@PathVariable Long customerId,
-                                                @PathVariable Long limit,
-                                                @PathVariable Long page);
+    PageVo findCustomerOrderPage(@PathVariable Long customerId,
+                                 @PathVariable Long limit,
+                                 @PathVariable Long page);
+
     /**
      * 获取司机订单分页列表
      *
      * @param driverId 司机id
-     * @param limit 页限制
-     * @param page 页码
+     * @param limit    页限制
+     * @param page     页码
      * @return 订单分页
      */
     @GetMapping("/findDriverOrderPage/{driverId}/{page}/{limit}")
-    public PageVo findDriverOrderPage(@PathVariable Long driverId,
-                                              @PathVariable Long limit,
-                                              @PathVariable Long page);
+    PageVo findDriverOrderPage(@PathVariable Long driverId,
+                               @PathVariable Long limit,
+                               @PathVariable Long page);
 
     /**
      * 根据订单id获取实际账单信息
@@ -163,7 +168,8 @@ public interface OrderInfoFeignClient {
      * @return 该订单的账单信息
      */
     @GetMapping("/getOrderBillInfo/{orderId}")
-    public OrderBillVo getOrderBillInfo(@PathVariable Long orderId);
+    OrderBillVo getOrderBillInfo(@PathVariable Long orderId);
+
     /**
      * 根据订单id获取实际分账信息
      *
@@ -171,7 +177,8 @@ public interface OrderInfoFeignClient {
      * @return 订单分账数据
      */
     @GetMapping("/getOrderProfitsharing/{orderId}")
-    public OrderProfitsharingVo getOrderProfitsharing(@PathVariable Long orderId);
+    OrderProfitsharingVo getOrderProfitsharing(@PathVariable Long orderId);
+
     /**
      * 发送账单信息
      *
@@ -184,15 +191,18 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @GetMapping("/sendOrderBillInfo/{orderId}/{driverId}")
-    public Boolean sendOrderBillInfo(@PathVariable Long orderId, @PathVariable Long driverId);
+    Boolean sendOrderBillInfo(@PathVariable Long orderId, @PathVariable Long driverId);
+
     /**
      * 获取订单支付信息
-     * @param orderNo 订单编号
+     *
+     * @param orderNo    订单编号
      * @param customerId 用户id
      * @return 订单支付信息
      */
     @GetMapping("/getOrderPayVo/{orderNo}/{customerId}")
-    public OrderPayVo getOrderPayVo(@PathVariable String orderNo, @PathVariable Long customerId);
+    OrderPayVo getOrderPayVo(@PathVariable String orderNo, @PathVariable Long customerId);
+
     /**
      * 更改订单支付状态
      *
@@ -200,13 +210,13 @@ public interface OrderInfoFeignClient {
      * @return true
      */
     @GetMapping("/updateOrderPayStatus/{orderNo} ")
-    public Boolean updateOrderPayStatus(@PathVariable String orderNo);
+    Boolean updateOrderPayStatus(@PathVariable String orderNo);
 
     @GetMapping("/getOrderRewardFee/{orderNo} ")
-    public OrderRewardVo getOrderRewardFee(@PathVariable String orderNo);
+    OrderRewardVo getOrderRewardFee(@PathVariable String orderNo);
 
     @GetMapping("/updateCouponAmount/{orderId}/{couponAmount}")
-    public Boolean updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount);
+    Boolean updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount);
 
 
 }

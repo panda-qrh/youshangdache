@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CiFeignClient {
 
     @PostMapping("/textAuditing")
-    public TextAuditingVo textAuditing(@RequestBody String content);
+    TextAuditingVo textAuditing(@RequestBody String content);
 }

@@ -46,7 +46,6 @@ import java.util.Date;
 
 @Slf4j
 @Service
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class OrderServiceImpl implements OrderService {
     @Resource
     private MapFeignClient mapFeignClient;
@@ -102,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
         //更新订单支付金额
         BigDecimal payAmount = orderPayVo.getPayAmount();
         if (couponAmount != null) {
-            Boolean aBoolean = orderInfoFeignClient.updateCouponAmount(orderPayVo.getOrderId(), couponAmount);
+            orderInfoFeignClient.updateCouponAmount(orderPayVo.getOrderId(), couponAmount);
             //当前支付金额
             payAmount = payAmount.subtract(couponAmount);
         }
@@ -299,7 +298,7 @@ public class OrderServiceImpl implements OrderService {
                 .createTime(new Date())
                 .build();
 
-        Long jobId = newOrderFeignClient.addAndStartTask(newOrderTaskVo);
+        newOrderFeignClient.addAndStartTask(newOrderTaskVo);
 
         return orderId;
     }

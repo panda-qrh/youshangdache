@@ -43,7 +43,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements OrderInfoService {
 
     @Resource
@@ -71,16 +70,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateProfitsharingStatus(String orderNo) {
-        //查询订单
         OrderInfo orderInfo = orderInfoMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo, orderNo).select(OrderInfo::getId));
-
-        //更新状态条件
-        LambdaQueryWrapper<OrderProfitsharing> updateQueryWrapper = new LambdaQueryWrapper<>();
-        updateQueryWrapper.eq(OrderProfitsharing::getOrderId, orderInfo.getId());
-        //更新字段
         OrderProfitsharing updateOrderProfitsharing = new OrderProfitsharing();
         updateOrderProfitsharing.setStatus(ProfitsharingStatusEnum.SHARED);
-        orderProfitsharingMapper.update(updateOrderProfitsharing, updateQueryWrapper);
+        orderProfitsharingMapper.update(updateOrderProfitsharing, new LambdaQueryWrapper<OrderProfitsharing>()
+                .eq(OrderProfitsharing::getOrderId, orderInfo.getId()));
     }
 
     /**
@@ -139,7 +133,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderRewardVo orderRewardVo = new OrderRewardVo();
         orderRewardVo.setOrderId(orderInfo.getId());
         orderRewardVo.setDriverId(orderInfo.getDriverId());
-        orderRewardVo.setRewardFee(orderRewardVo.getRewardFee());
+        orderRewardVo.setRewardFee(orderBill.getRewardFee());
         return orderRewardVo;
     }
 
@@ -254,10 +248,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return 分页数据
      */
     @Override
-    public PageVo findDriverOrderPage(Page<OrderInfo> pageParam, Long driverId) {
+    public PageVo<?> findDriverOrderPage(Page<OrderInfo> pageParam, Long driverId) {
         IPage<OrderListVo> pageInfo = orderInfoMapper.selectDriverOrderPage(pageParam, driverId);
-        PageVo<OrderListVo> pageVo = new PageVo<>(pageInfo.getRecords(), pageInfo.getPages(), pageInfo.getSize());
-        return pageVo;
+        return new PageVo<>(pageInfo.getRecords(), pageInfo.getPages(), pageInfo.getSize());
     }
 
     /**
@@ -268,10 +261,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return 订单数据
      */
     @Override
-    public PageVo findCustomerOrderPage(Page<OrderInfo> pageParam, Long customerId) {
+    public PageVo<?> findCustomerOrderPage(Page<OrderInfo> pageParam, Long customerId) {
         IPage<OrderListVo> pageInfo = orderInfoMapper.selectCustomerOrderPage(pageParam, customerId);
-        PageVo<OrderListVo> pageVo = new PageVo<>(pageInfo.getRecords(), pageInfo.getPages(), pageInfo.getSize());
-        return pageVo;
+        return new PageVo<>(pageInfo.getRecords(), pageInfo.getPages(), pageInfo.getSize());
     }
 
     /**
