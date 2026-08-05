@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  *
  * @author qy
  */
-@FeignClient(value = "service-system")
+@FeignClient(value = "service")
 public interface SysOperLogFeignClient {
 
     @PostMapping("/sysOperLog/findPage/{page}/{limit}")

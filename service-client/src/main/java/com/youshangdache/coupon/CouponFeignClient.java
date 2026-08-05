@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 
-@FeignClient(value = "service-coupon")
+@FeignClient(value = "service")
 public interface CouponFeignClient {
     /**
      * 领取优惠券

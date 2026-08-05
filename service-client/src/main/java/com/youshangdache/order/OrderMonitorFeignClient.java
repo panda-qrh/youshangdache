@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@FeignClient(value = "service-order",path = "/order/monitor")
+@FeignClient(value = "service", path = "/order/monitor")
 public interface OrderMonitorFeignClient {
 
     /**

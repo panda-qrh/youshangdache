@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(value = "service-system")
+@FeignClient(value = "service")
 public interface SysMenuFeignClient {
 
 

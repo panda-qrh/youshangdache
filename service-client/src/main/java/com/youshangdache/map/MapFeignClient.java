@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "service-map")
+@FeignClient(value = "service")
 public interface MapFeignClient {
     /**
      * 计算最佳驾驶路线-司乘同显

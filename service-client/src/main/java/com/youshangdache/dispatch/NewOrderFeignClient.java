@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 
-@FeignClient(value = "service-dispatch", path = "/dispatch")
+@FeignClient(value = "service", path = "/dispatch")
 public interface NewOrderFeignClient {
 
     /**

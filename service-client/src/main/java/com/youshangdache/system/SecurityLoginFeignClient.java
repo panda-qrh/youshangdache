@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author qy
  */
-@FeignClient(value = "service-system")
+@FeignClient(value = "service")
 public interface SecurityLoginFeignClient {
 
     /**

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "service-customer")
+@FeignClient(value = "service")
 public interface CustomerInfoFeignClient {
     /**
      * 小程序登录接口-用户端

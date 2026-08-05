@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@FeignClient(value = "service-map")
+@FeignClient(value = "service")
 public interface LocationFeignClient {
     /**
      * 开启接单服务：更新司机经纬度位置

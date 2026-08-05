@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-@FeignClient(value = "service-driver")
+@FeignClient(value = "service")
 public interface CosFeignClient {
     /**
      * 上传证件照到腾讯云私有存储桶， 得有对应的权限才能申请临时访问url

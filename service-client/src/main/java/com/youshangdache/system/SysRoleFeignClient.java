@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(value = "service-system")
+@FeignClient(value = "service")
 public interface SysRoleFeignClient {
 
 

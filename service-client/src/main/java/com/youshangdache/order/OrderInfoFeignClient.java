@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.math.BigDecimal;
 
 
-@FeignClient(value = "service-order", path = "/order/info")
-interface OrderInfoFeignClient {
+@FeignClient(value = "service", path = "/order/info")
+public interface OrderInfoFeignClient {
     /**
      * 保存订单信息
      *
