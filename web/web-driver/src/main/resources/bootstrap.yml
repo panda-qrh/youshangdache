@@ -39,30 +39,10 @@ feign:
   sentinel:
     enabled: true
 
-wx:
-  miniapp:
-    appId: wxcc651fcbab275e33
-    secret: 5f353399a2eae7ff6ceda383e924c5f6
-  v3pay:
-    appid: wxcc651fcbab275e33
-    merchantId: 1631833859
-    privateKeyPath: D:\work\daijia_work\daijia_new\daijia-parent\service\src\main\resources\apiclient_key.pem
-    merchantSerialNumber: 4AE80B52EBEAB2B96F68E02510A42801E952E889
-    apiV3key: 84dba6dd51cdaf779e55bcabae564b53
-    notifyUrl: http://${remote-ip}:8600/payment/wxPay/notify
-tencent:
-  cloud:
-    secretId: AKIDxjGYcR0KPFqBH8j6E7***
-    secretKey: KPFsGPJyNWQ5WheNq55qMcdOuA***
-    region: ap-beijing
-    bucketPrivate: daijia-private-1307503602
-    persionGroupId: 1
-  map:
-    key: PYOBZ-Y6ZRZ-HMZXP-ZTMES-***-***
 minio:
   endpointUrl: http://${remote-ip}:9000
   accessKey: admin123
-  secreKey: admin123
+  secretKey: admin123
   bucketName: sph
 
 server:
