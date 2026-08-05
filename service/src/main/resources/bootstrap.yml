@@ -8,12 +8,111 @@ spring:
   main:
     allow-bean-definition-overriding: true
   cloud:
-    nacos:
-      discovery:
-        server-addr: ${remote-ip}:8848
-      config:
-        server-addr: ${remote-ip}:8848
-        prefix: ${spring.application.name}
-        file-extension: yaml
-        shared-configs[0]:
-          data-id: common-account.yaml
+    openfeign:
+      lazy-attributes-resolution: true
+      client:
+        config:
+          default:
+            connectTimeout: 30000
+            readTimeout: 30000
+            loggerLevel: basic
+  data:
+    redis:
+      host: ${remote-ip}
+      port: 6379
+      database: 0
+      timeout: 1800000
+      password:
+      jedis:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 5
+          min-idle: 0
+    mongodb:
+      host: 39.98.123.211
+      port: 27017
+      database: daijia
+  rabbitmq:
+    host: 139.198.163.91
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirm-type: CORRELATED
+    publisher-returns: true
+    listener:
+      simple:
+        cknowledge-mode: manual
+        prefetch: 1
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://139.198.104.58:3306/daijia_order?characterEncoding=utf-8&useSSL=false
+    username: root
+    password: shangguigu@QY123
+    hikari:
+      connection-test-query: SELECT 1
+      connection-timeout: 60000
+      idle-timeout: 500000
+      max-lifetime: 540000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      pool-name: GuliHikariPool
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+feign:
+  sentinel:
+    enabled: true
+
+xxl:
+  job:
+    admin:
+      addresses: http://localhost:8080/xxl-job-admin
+    accessToken: default_token
+    executor:
+      appname: xxl-job-executor-sample
+      port: 9999
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30
+    client:
+      jobGroupId: 1
+      addUrl: ${xxl.job.admin.addresses}/jobinfo/addJob
+      removeUrl: ${xxl.job.admin.addresses}/jobinfo/removeJob
+      startJobUrl: ${xxl.job.admin.addresses}/jobinfo/startJob
+      stopJobUrl: ${xxl.job.admin.addresses}/jobinfo/stopJob
+      addAndStartUrl: ${xxl.job.admin.addresses}/jobinfo/addAndStartJob
+
+wx:
+  miniapp:
+    appId: wxcc651fcbab275e33
+    secret: 5f353399a2eae7ff6ceda383e924c5f6
+  v3pay:
+    appid: wxcc651fcbab275e33
+    merchantId: 1631833859
+    privateKeyPath: D:\work\daijia_work\daijia_new\daijia-parent\service\src\main\resources\apiclient_key.pem
+    merchantSerialNumber: 4AE80B52EBEAB2B96F68E02510A42801E952E889
+    apiV3key: 84dba6dd51cdaf779e55bcabae564b53
+    notifyUrl: http://${remote-ip}:8600/payment/wxPay/notify
+tencent:
+  cloud:
+    secretId: AKIDxjGYcR0KPFqBH8j6E7***
+    secretKey: KPFsGPJyNWQ5WheNq55qMcdOuA***
+    region: ap-beijing
+    bucketPrivate: daijia-private-1307503602
+    persionGroupId: 1
+  map:
+    key: PYOBZ-Y6ZRZ-HMZXP-ZTMES-***-***
+minio:
+  endpointUrl: http://${remote-ip}:9000
+  accessKey: admin123
+  secreKey: admin123
+  bucketName: sph
+
+server:
+  port: 8088

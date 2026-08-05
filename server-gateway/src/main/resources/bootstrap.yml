@@ -3,15 +3,54 @@ remote-ip: 192.168.200.130
 spring:
   application:
     name: server-gateway
-  profiles:
-    active: dev
   main:
     allow-bean-definition-overriding: true
   cloud:
-    nacos:
+    openfeign:
+      lazy-attributes-resolution: true
+      client:
+        config:
+          default:
+            connectTimeout: 30000
+            readTimeout: 30000
+            loggerLevel: basic
+    gateway:
       discovery:
-        server-addr: ${remote-ip}:8848
-      config:
-        server-addr: ${remote-ip}:8848
-        prefix: ${spring.application.name}
-        file-extension: yaml
+        locator:
+          enabled: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+            maxAge: 36000
+      routes:
+        - id: web-customer
+          uri: lb://web-customer
+          predicates:
+            - Path=/customer-api/**
+          filters:
+            - StripPrefix=1
+        - id: web-driver
+          uri: lb://web-driver
+          predicates:
+            - Path=/driver-api/**
+          filters:
+            - StripPrefix=1
+        - id: web-mgr
+          uri: lb://web-mgr
+          predicates:
+            - Path=/mgr-api/**
+          filters:
+            - StripPrefix=1
+        - id: service
+          uri: lb://service
+          predicates:
+            - Path=/order/**, /payment/**, /coupon/**, /driver/**, /dispatch/**, /map/**, /mq/**, /rules/**, /system/**
+          filters:
+            - StripPrefix=1
+
+feign:
+  sentinel:
+    enabled: true

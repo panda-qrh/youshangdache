@@ -28,7 +28,6 @@ import com.wechat.pay.java.core.notification.NotificationParser;
 import com.wechat.pay.java.core.notification.RequestParam;
 import com.wechat.pay.java.service.partnerpayments.jsapi.JsapiServiceExtension;
 import com.wechat.pay.java.service.partnerpayments.jsapi.model.*;
-import io.seata.spring.annotation.GlobalTransactional;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +54,7 @@ public class WxPayServiceImpl implements WxPayService {
     private DriverAccountFeignClient driverAccountFeignClient;
 
     @Override
-    @GlobalTransactional
+    @Transactional
     public void handlerOrder(String orderNo) {
         orderInfoFeignClient.updateOrderPayStatus(orderNo);
 
