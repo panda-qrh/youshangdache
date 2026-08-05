@@ -108,11 +108,6 @@ tencent:
     persionGroupId: 1
   map:
     key: PYOBZ-Y6ZRZ-HMZXP-ZTMES-***-***
-minio:
-  endpointUrl: http://${remote-ip}:9000
-  accessKey: admin123
-  secreKey: admin123
-  bucketName: sph
 
 server:
   port: 8088
