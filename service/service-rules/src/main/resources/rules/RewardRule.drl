@@ -1,45 +1,50 @@
-package com.qrh.youshangdache.rules
+package com.youshangdache.rules
 
-import com.qrh.youshangdache.model.form.rules.RewardRuleRequest;
+import com.youshangdache.model.form.rules.RewardRuleRequest;
 import java.math.BigDecimal
-import com.qrh.youshangdache.model.vo.rules.RewardRuleResponse;
+import com.youshangdache.model.vo.rules.RewardRuleResponse;
 
-global com.qrh.youshangdache.model.vo.rules.RewardRuleResponse rewardRuleResponse;
+global com.youshangdache.model.vo.rules.RewardRuleResponse rewardRuleResponse;
 
 /**
-    系统奖励
-        00:00:00-06:59:59  完成5单后 每单奖励5元
-        07:00:00-23:59:59  完成10单后 每单奖励2元
+ * 系统奖励规则
+ *
+ * 同 FeeRule.drl：必须用 setRewardAmount() 修改 global 指向的同一个对象。
+ * 原来写成 rewardRuleResponse = RewardRuleResponse.builder()...build()，
+ * Drools 不会把 consequence 里对 global 变量的重新赋值传播出去，
+ * 导致调用方拿到的 rewardAmount 永远为 null。
+ */
+
+/**
+    00:00:00-06:59:59  完成5单后 每单奖励5元
+    07:00:00-23:59:59  完成10单后 每单奖励2元
 */
 rule "00:00:00-06:59:59  完成5单后 每单奖励5元"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:RewardRuleRequest(
-            startTime >= "00:00:00"
+            startTime != null
+            && startTime >= "00:00:00"
             && startTime <= "06:59:59"
+            && orderNum != null
             && orderNum > 5
         )
     then
-        rewardRuleResponse = RewardRuleResponse.builder()
-                        .rewardAmount(new BigDecimal("5.0"))
-                        .build();
-        System.out.printf("00:00:00-06:59:59 奖励：%s 元\n",
-                       rewardRuleResponse.getRewardAmount());
+        rewardRuleResponse.setRewardAmount(new BigDecimal("5.0"));
 end
+
 rule "07:00:00-23:59:59  完成10单后 每单奖励2元"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:RewardRuleRequest(
-            startTime >= "07:00:00"
+            startTime != null
+            && startTime >= "07:00:00"
             && startTime <= "23:59:59"
+            && orderNum != null
             && orderNum > 10
         )
     then
-        rewardRuleResponse = RewardRuleResponse.builder()
-                        .rewardAmount(new BigDecimal("2.0"))
-                        .build();
-        System.out.printf("07:00:00-23:59:59 奖励：%s 元\n",
-                       rewardRuleResponse.getRewardAmount());
+        rewardRuleResponse.setRewardAmount(new BigDecimal("2.0"));
 end

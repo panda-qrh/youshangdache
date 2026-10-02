@@ -21,9 +21,12 @@ public class GuiguCorrelationData extends CorrelationData {
     //延迟时长
     private int delayTime = 10;
 
-    private GuiguCorrelationData(String id, Object message, String routingKey, int retryCount, boolean isDelay, int delayTime) {
+    private GuiguCorrelationData(String id, Object message, String exchange, String routingKey, int retryCount, boolean isDelay, int delayTime) {
         super.setId(id);
         this.message = message;
+        //exchange 必须在这里赋值：消息重发要用它作为目标交换机。
+        //漏掉这一步会让 getExchange() 恒为 null，重发时相当于往 null 交换机发消息，必然失败。
+        this.exchange = exchange;
         this.routingKey = routingKey;
         this.retryCount = retryCount;
         this.isDelay = isDelay;
@@ -85,7 +88,7 @@ public class GuiguCorrelationData extends CorrelationData {
         }
 
         public GuiguCorrelationData build() {
-            return new GuiguCorrelationData(id, message, routingKey, retryCount, isDelay, delayTime);
+            return new GuiguCorrelationData(id, message, exchange, routingKey, retryCount, isDelay, delayTime);
         }
     }
 }

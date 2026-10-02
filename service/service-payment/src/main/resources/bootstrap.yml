@@ -15,6 +15,9 @@ spring:
         server-addr: ${remote-ip}:8848
         prefix: ${spring.application.name}
         file-extension: yaml
+        # 引入公共配置：微信支付 appid/商户号/私钥路径/APIv3 密钥都在 common-account.yaml 中
+        shared-configs[0]:
+          data-id: common-account.yaml
 seata:
   tx-service-group: tingshu-tx-group
   service:

@@ -76,7 +76,7 @@ public class OrderController {
      */
     @Operation(summary = "司机端查找当前订单")
     @Login
-    @GetMapping("/searchDriverCurrentOrder ")
+    @GetMapping("/searchDriverCurrentOrder")
     public Result<CurrentOrderInfoVo> searchDriverCurrentOrder() {
         return Result.ok(orderService.searchDriverCurrentOrder(AuthContextHolder.getUserId()));
     }
@@ -110,7 +110,7 @@ public class OrderController {
      */
     @Operation(summary = "计算最佳驾驶路线")
     @Login
-    @GetMapping("/calculateDrivingLine")
+    @PostMapping("/calculateDrivingLine")
     public Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
         return Result.ok(orderService.calculateDrivingLine(calculateDrivingLineForm));
     }

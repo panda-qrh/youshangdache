@@ -131,7 +131,11 @@ public class WxPayServiceImpl implements WxPayService {
 
     public void handlePayment(Transaction transaction) {
         PaymentInfo paymentInfo = paymentInfoMapper.selectOne(new LambdaQueryWrapper<PaymentInfo>().eq(PaymentInfo::getOrderNo, transaction.getOutTradeNo()));
-        if (paymentInfo.getPaymentStatus() == 1) {
+        if (paymentInfo == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+        //幂等判断：paymentStatus 是 Integer，为 null 时直接 == 1 会拆箱 NPE
+        if (Integer.valueOf(1).equals(paymentInfo.getPaymentStatus())) {
             return;
         }
 
@@ -171,11 +175,12 @@ public class WxPayServiceImpl implements WxPayService {
             request.setSpAppid(wxPayV3Properties.getAppid());
             request.setSpMchid(wxPayV3Properties.getMerchantId());
             //string[1,127]
+            //注意：截断后的 description 必须真正用起来，否则商品描述超过 127 字符时微信会直接报错
             String description = paymentInfo.getContent();
-            if (description.length() > 127) {
+            if (description != null && description.length() > 127) {
                 description = description.substring(0, 127);
             }
-            request.setDescription(paymentInfo.getContent());
+            request.setDescription(description);
             request.setNotifyUrl(wxPayV3Properties.getNotifyUrl());
             request.setOutTradeNo(paymentInfo.getOrderNo());
 

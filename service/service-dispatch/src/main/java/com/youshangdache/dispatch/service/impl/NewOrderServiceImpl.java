@@ -54,7 +54,9 @@ public class NewOrderServiceImpl implements NewOrderService {
     @Override
     public Boolean clearNewOrderQueueData(Long driverId) {
         String key = RedisConstant.DRIVER_ORDER_TEMP_LIST + driverId;
-        return stringRedisTemplate.delete(key);
+        stringRedisTemplate.delete(key);
+        //删除不存在的 key 时 delete 会返回 false，直接返回它会让调用方误以为清理失败
+        return true;
     }
 
     /**
@@ -103,6 +105,12 @@ public class NewOrderServiceImpl implements NewOrderService {
         nearByDrivers.setLatitude(newOrderTaskVo.getStartPointLatitude());
         nearByDrivers.setMileageDistance(newOrderTaskVo.getExpectDistance());
         List<NearByDriverVo> nearByDriverVoList = locationFeignClient.searchNearByDriver(nearByDrivers);
+        //附近司机可能为空（服务返回空集合或异常时返回 null），必须先判空，
+        //否则 forEach 会直接抛 NPE，导致每分钟一次的调度任务持续失败。
+        if (nearByDriverVoList == null || nearByDriverVoList.isEmpty()) {
+            log.info("订单 {} 附近没有满足条件的司机，本次不派单", newOrderTaskVo.getOrderId());
+            return true;
+        }
         //给司机派发订单信息
         nearByDriverVoList.forEach(driver -> {
             //记录司机id，防止重复推送订单信息
@@ -111,7 +119,7 @@ public class NewOrderServiceImpl implements NewOrderService {
             if (!isMember) {
                 //记录该订单已放入司机临时容器
                 stringRedisTemplate.opsForSet().add(repeatKey, driver.getDriverId().toString());
-                //过期时间：15分钟，新订单15分钟没人接单自动取消
+                //过期时间：16分钟（比"15分钟无人接单自动取消"稍长，保证订单取消前不会重复推给同一个司机）
                 stringRedisTemplate.expire(repeatKey, RedisConstant.DRIVER_ORDER_REPEAT_LIST_EXPIRES_TIME, TimeUnit.MINUTES);
 
                 NewOrderDataVo newOrderDataVo = NewOrderDataVo.builder()
@@ -165,15 +173,29 @@ public class NewOrderServiceImpl implements NewOrderService {
             orderJob.setParameter(JSONObject.toJSONString(newOrderTaskVo));
 
             final OrderJob finalOrderJob = orderJob;
-            // 4、插入数据库
-            transactionTemplate.execute(action -> {
+            try {
+                // 4、插入数据库
+                transactionTemplate.execute(action -> {
+                    try {
+                        return orderJobMapper.insert(finalOrderJob);
+                    } catch (Exception e) {
+                        action.setRollbackOnly();
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (Exception e) {
+                //XXL-Job 任务是在事务之外通过 HTTP 先创建出来的，
+                //如果 order_job 落库失败就会留下一个永远没人管理的"孤儿任务"，
+                //这里必须把刚创建的任务删掉，保证两边状态一致。
+                log.error("订单 {} 的调度任务关联落库失败，回滚已创建的 XXL-Job 任务 jobId={}",
+                        newOrderTaskVo.getOrderId(), jobId, e);
                 try {
-                    return orderJobMapper.insert(finalOrderJob);
-                } catch (Exception e) {
-                    action.setRollbackOnly();
-                    throw new RuntimeException(e);
+                    xxlJobClient.removeJob(jobId);
+                } catch (Exception ex) {
+                    log.error("删除孤儿调度任务失败，jobId={}", jobId, ex);
                 }
-            });
+                throw e;
+            }
         }
         return orderJob.getJobId();
     }

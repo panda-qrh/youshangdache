@@ -39,6 +39,16 @@ public interface DriverInfoFeignClient {
     @PostMapping("/updateDriverAuthInfo")
     Boolean UpdateDriverAuthInfo(@RequestBody UpdateDriverAuthInfoForm updateDriverAuthInfoForm);
 
+    /**
+     * 后台审核司机认证信息
+     *
+     * @param driverId   司机id
+     * @param authStatus 审核结果：1 审核中，2 认证通过，-1 认证未通过
+     * @return true
+     */
+    @PostMapping("/updateDriverAuthStatus/{driverId}/{authStatus}")
+    Boolean updateDriverAuthStatus(@PathVariable("driverId") Long driverId, @PathVariable("authStatus") Integer authStatus);
+
     @PostMapping("/creatDriverFaceModel")
     Boolean creatDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm);
 

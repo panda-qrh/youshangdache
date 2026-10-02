@@ -12,6 +12,7 @@ import com.youshangdache.model.vo.driver.DriverInfoVo;
 import com.youshangdache.model.vo.map.DrivingLineVo;
 import com.youshangdache.model.vo.map.OrderLocationVo;
 import com.youshangdache.model.vo.map.OrderServiceLastLocationVo;
+import com.youshangdache.model.vo.order.CurrentOrderInfoVo;
 import com.youshangdache.model.vo.order.OrderInfoVo;
 import com.youshangdache.model.vo.payment.WxPrepayVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -72,6 +73,14 @@ public interface OrderService {
     DrivingLineVo calculateDriverLine(CalculateDrivingLineForm calculateDrivingLineForm);
 
     OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId);
+
+    /**
+     * 查询乘客当前是否有进行中的订单
+     *
+     * @param customerId 用户id
+     * @return 当前订单信息
+     */
+    CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
     /**
      * 获取乘客订单分页列表
      *

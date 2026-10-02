@@ -22,7 +22,7 @@
         info.use_count,
         info.receive_count,
         info.expire_time,
-        info.describe,
+        info.description,
         info.status,
         info.create_time,
         info.update_time,
@@ -40,13 +40,19 @@
                info.publish_count,
                info.per_limit,
                info.expire_time,
-               info.describe
+               info.description
         from coupon_info info
         where info.status = 1
-          and info.receive_count &lt; info.publish_count
+          <!-- publish_count = 0 表示发行数量不限，也必须出现在"未领取"列表中 -->
+          and (info.publish_count = 0 or info.receive_count &lt; info.publish_count)
           and (
                 info.per_limit = 0 or
-                info.per_limit &lt; (select count(1) from customer_coupon where customer_id = #{customerId})
+                <!-- 这里统计的必须是"当前用户对当前这张券"已领取的数量：
+                     漏掉 coupon_id = info.id 会统计成该用户领取的所有券总数；
+                     并且比较方向应为 per_limit > 已领数量（还能再领） -->
+                info.per_limit &gt; (select count(1) from customer_coupon cstr
+                                     where cstr.customer_id = #{customerId}
+                                       and cstr.coupon_id = info.id)
             )
         order by info.id desc
     </select>
@@ -61,7 +67,7 @@
                info.publish_count,
                info.per_limit,
                info.expire_time,
-               info.describe,
+               info.description,
                cstr.receive_time
         from coupon_info info
                  inner join customer_coupon cstr on cstr.coupon_id = info.id
@@ -81,7 +87,7 @@
                info.publish_count,
                info.per_limit,
                info.expire_time,
-               info.describe,
+               info.description,
                cstr.id as customerCouponId,
                cstr.used_time
         from coupon_info info
@@ -115,7 +121,7 @@
                info.publish_count,
                info.per_limit,
                info.expire_time,
-               info.describe,
+               info.description,
                cstr.id as customerCouponId,
                cstr.receive_time
         from coupon_info info

@@ -1,6 +1,7 @@
 package com.youshangdache.model.vo.order;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.youshangdache.model.enums.ProfitsharingStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -37,8 +38,8 @@ public class OrderProfitsharingVo {
 	@TableField("driver_income")
 	private BigDecimal driverIncome;
 
-    @Schema(description = "分账状态，1未分账，2已分账")
+    @Schema(description = "分账状态：0未分账，1已分账")
 	@TableField("status")
-	private Integer status;
+	private ProfitsharingStatusEnum status;
 
 }

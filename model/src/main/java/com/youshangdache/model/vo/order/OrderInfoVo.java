@@ -1,5 +1,6 @@
 package com.youshangdache.model.vo.order;
 
+import com.youshangdache.model.enums.OrderStatusEnum;
 import com.youshangdache.model.vo.customer.CustomerInfoVo;
 import com.youshangdache.model.vo.driver.DriverInfoVo;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,7 +37,7 @@ public class OrderInfoVo {
 	private BigDecimal endPointLatitude;
 
 	@Schema(description = "订单状态")
-	private Integer status;
+	private OrderStatusEnum status;
 
 	@Schema(description = "创建时间")
 	private Date createTime;

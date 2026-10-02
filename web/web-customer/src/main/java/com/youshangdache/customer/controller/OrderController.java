@@ -38,9 +38,9 @@ public class OrderController {
     @Login
     @GetMapping("/searchCustomerCurrentOrder")
     public Result<CurrentOrderInfoVo> searchCustomerCurrentOrder() {
-        CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
-        currentOrderInfoVo.setIsHasCurrentOrder(false);
-        return Result.ok(currentOrderInfoVo);
+        //这里必须真正走到服务层查询，不能直接返回"没有进行中订单"，
+        //否则乘客在有进行中订单的情况下仍然可以重复下单。
+        return Result.ok(orderService.searchCustomerCurrentOrder(AuthContextHolder.getUserId()));
     }
 
 
@@ -133,7 +133,7 @@ public class OrderController {
      */
     @Operation(summary = "计算最佳驾驶路线")
     @Login
-    @GetMapping("/calculateDriverLine")
+    @PostMapping("/calculateDriverLine")
     public Result<DrivingLineVo> calculateDriverLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
         return Result.ok(orderService.calculateDriverLine(calculateDrivingLineForm));
     }
@@ -153,7 +153,7 @@ public class OrderController {
      */
     @Operation(summary = "获取乘客订单分页列表")
     @Login
-    @GetMapping("/findCustomerOrderPage /{page}/{limit}")
+    @GetMapping("/findCustomerOrderPage/{page}/{limit}")
     public Result<PageVo> findCustomerOrderPage(@PathVariable Long limit,
                                                 @PathVariable Long page) {
         Page<OrderInfo> pageParam = new Page<>(page, limit);

@@ -10,8 +10,10 @@ import com.youshangdache.driver.config.TencentCloudProperties;
 import com.youshangdache.driver.mapper.*;
 import com.youshangdache.driver.service.CosService;
 import com.youshangdache.driver.service.DriverInfoService;
+import com.youshangdache.driver.service.DriverLoginLogRecorder;
 import com.youshangdache.model.entity.driver.*;
 import com.youshangdache.model.enums.AccountStatusEnum;
+import com.youshangdache.model.enums.AuthStatusEnum;
 import com.youshangdache.model.enums.DriverServiceStatusEnum;
 import com.youshangdache.model.enums.LoginStatusEnum;
 import com.youshangdache.model.form.driver.DriverFaceModelForm;
@@ -67,6 +69,8 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     private DriverFaceRecognitionMapper driverFaceRecognitionMapper;
     @Resource
     private HttpServletRequest request;
+    @Resource
+    private DriverLoginLogRecorder driverLoginLogRecorder;
 
     /**
      * 获取司机openId
@@ -174,9 +178,15 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
      */
     @Override
     public Boolean isFaceRecognition(Long driverId) {
+        //face_date 是 Date 类型（写入的是 new Date()，带时分秒），
+        //用 "yyyy-MM-dd" 字符串去等值比较在 datetime 列上几乎永远匹配不到，
+        //这里改成按"当天 00:00:00 ~ 次日 00:00:00"的时间区间查询。
+        Date startOfDay = new DateTime().withTimeAtStartOfDay().toDate();
+        Date startOfNextDay = new DateTime(startOfDay).plusDays(1).toDate();
         LambdaQueryWrapper<DriverFaceRecognition> queryWrapper = new LambdaQueryWrapper<DriverFaceRecognition>()
                 .eq(DriverFaceRecognition::getDriverId, driverId)
-                .eq(DriverFaceRecognition::getFaceDate, new DateTime().toString("yyyy-MM-dd"));
+                .ge(DriverFaceRecognition::getFaceDate, startOfDay)
+                .lt(DriverFaceRecognition::getFaceDate, startOfNextDay);
         Long count = driverFaceRecognitionMapper.selectCount(queryWrapper);
         return count != 0;
     }
@@ -205,13 +215,15 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
             CreatePersonRequest req = new CreatePersonRequest();
             req.setGroupId(tencentCloudProperties.getPersionGroupId());
             req.setPersonId(String.valueOf(driverInfo.getId()));
-            req.setGender(Long.parseLong(driverInfo.getGender()));
+            //gender 可能为 null（新注册司机还没填资料），直接 parseLong 会抛 NumberFormatException；
+            //腾讯云 IAI 的性别参数是必填，取不到时按"男(1)"兜底。
+            req.setGender(parseGender(driverInfo.getGender()));
             req.setQualityControl(4L);
             req.setUniquePersonControl(4L);
             req.setPersonName(driverInfo.getName());
             req.setImage(driverFaceModelForm.getImageBase64());
             CreatePersonResponse resp = client.CreatePerson(req);
-            System.out.println(CreatePersonResponse.toJsonString(resp));
+            log.info("创建司机人脸模型返回：{}", CreatePersonResponse.toJsonString(resp));
             if (StringUtils.hasText(resp.getFaceId())) {
                 driverInfo.setFaceModelId(resp.getFaceId());
                 this.updateById(driverInfo);
@@ -226,6 +238,9 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     /**
      * 更新司机认证信息
      *
+     * <p>提交认证资料后必须把审核状态置为"审核中"，否则 auth_status 永远停在"未认证"，
+     * 司机在开启接单时会被 DRIVER_NOT_AUTH 拦住，永远无法接单。</p>
+     *
      * @param updateDriverAuthInfoForm
      * @return
      */
@@ -235,7 +250,52 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         DriverInfo driverInfo = new DriverInfo();
         driverInfo.setId(updateDriverAuthInfoForm.getDriverId());
         BeanUtils.copyProperties(updateDriverAuthInfoForm, driverInfo);
+        driverInfo.setAuthStatus(AuthStatusEnum.REVIEWING);
         return this.updateById(driverInfo);
+    }
+
+    /**
+     * 后台审核司机认证信息
+     *
+     * <p>原来没有任何写入 auth_status 的入口，导致 AUTHENTICATION_PASSED 永远不可达、
+     * 司机端开启接单必然失败，这里补上审核通过/驳回的状态流转。</p>
+     *
+     * @param driverId   司机id
+     * @param authStatus 审核结果（只允许 REVIEWING / AUTHENTICATION_PASSED / AUTHENTICATION_FAILED）
+     * @return true
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean updateDriverAuthStatus(Long driverId, Integer authStatus) {
+        if (driverId == null || authStatus == null) {
+            throw new GuiguException(ResultCodeEnum.ARGUMENT_VALID_ERROR);
+        }
+        AuthStatusEnum target = AuthStatusEnum.of(authStatus);
+        if (target == AuthStatusEnum.UNAUTHORIZED) {
+            throw new GuiguException(ResultCodeEnum.ARGUMENT_VALID_ERROR);
+        }
+        DriverInfo driverInfo = new DriverInfo();
+        driverInfo.setId(driverId);
+        driverInfo.setAuthStatus(target);
+        return this.updateById(driverInfo);
+    }
+
+    /**
+     * 安全解析性别：取不到时按"男(1)"兜底
+     *
+     * @param gender 性别字符串
+     * @return 腾讯云 IAI 需要的性别值
+     */
+    private Long parseGender(String gender) {
+        if (!StringUtils.hasText(gender)) {
+            return 1L;
+        }
+        try {
+            return Long.parseLong(gender.trim());
+        } catch (NumberFormatException e) {
+            log.warn("司机性别字段非法：{}，按男(1)处理", gender);
+            return 1L;
+        }
     }
 
     /**
@@ -302,10 +362,9 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
             if (failMsg == null) {
                 failMsg = "openId为空";
             }
-            recordLoginLog(new DriverLoginLog(null, IpUtil.getIpAddress(request), LoginStatusEnum.FAIL, failMsg));
+            driverLoginLogRecorder.recordLoginLog(new DriverLoginLog(null, IpUtil.getIpAddress(request), LoginStatusEnum.FAIL, failMsg));
             throw new GuiguException(ResultCodeEnum.LOGIN_AUTH);
-        }
-        //根据openid查询是否第一次登录
+        }        //根据openid查询是否第一次登录
         DriverInfo driverInfo = driverInfoMapper.selectOne(
                 new LambdaQueryWrapper<DriverInfo>().eq(DriverInfo::getWxOpenId, openId)
         );
@@ -321,21 +380,9 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         }
         //异步记录司机登录信息
         String msg = isFirstLogin ? "小程序首次登录" : "小程序登录";
-        recordLoginLog(new DriverLoginLog(driverInfo.getId(), IpUtil.getIpAddress(request), LoginStatusEnum.SUCCESS, msg));
+        driverLoginLogRecorder.recordLoginLog(new DriverLoginLog(driverInfo.getId(), IpUtil.getIpAddress(request), LoginStatusEnum.SUCCESS, msg));
         //返回司机的id
         return driverInfo.getId();
-    }
-
-    /**
-     * 异步记录登录日志<br>
-     * <p>
-     * 线程池：{@link ThreadPoolConfig#loginLogExecutor()}
-     *
-     * @param loginLog 待记录的对象
-     */
-    @Async("loginLogExecutor")
-    public void recordLoginLog(DriverLoginLog loginLog) {
-        driverLoginLogMapper.insert(loginLog);
     }
 
     /**

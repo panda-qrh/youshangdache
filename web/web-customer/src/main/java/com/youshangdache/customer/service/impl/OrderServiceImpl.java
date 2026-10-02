@@ -28,6 +28,7 @@ import com.youshangdache.model.vo.driver.DriverInfoVo;
 import com.youshangdache.model.vo.map.DrivingLineVo;
 import com.youshangdache.model.vo.map.OrderLocationVo;
 import com.youshangdache.model.vo.map.OrderServiceLastLocationVo;
+import com.youshangdache.model.vo.order.CurrentOrderInfoVo;
 import com.youshangdache.model.vo.order.OrderBillVo;
 import com.youshangdache.model.vo.order.OrderInfoVo;
 import com.youshangdache.model.vo.order.OrderPayVo;
@@ -76,8 +77,11 @@ public class OrderServiceImpl implements OrderService {
     public WxPrepayVo createWxPayment(CreateWxPaymentForm createWxPaymentForm) {
         //1.获取订单支付相关信息
         OrderPayVo orderPayVo = orderInfoFeignClient.getOrderPayVo(createWxPaymentForm.getOrderNo(), createWxPaymentForm.getCustomerId());
-        //判断是否在未支付状态
-        if (orderPayVo.getStatus().equals(OrderStatusEnum.ORDER_UNPAID)) {
+        if (orderPayVo == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+        //只有"未付款"状态的订单才允许发起支付；其他状态（已支付、已取消等）一律拒绝
+        if (!OrderStatusEnum.ORDER_UNPAID.equals(orderPayVo.getStatus())) {
             throw new GuiguException(ResultCodeEnum.EXIST_UNPAID_ORDER);
         }
 
@@ -126,12 +130,24 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public PageVo findCustomerOrderPage(Page<OrderInfo> pageParam, Long customerId) {
-        return orderInfoFeignClient.findCustomerOrderPage(customerId, pageParam.getPages(), pageParam.getSize());
+        //分页要传当前页 getCurrent()，不能传总页数 getPages()
+        return orderInfoFeignClient.findCustomerOrderPage(customerId, pageParam.getCurrent(), pageParam.getSize());
     }
 
     @Override
     public OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId) {
         return locationFeignClient.getOrderServiceLastLocation(orderId);
+    }
+
+    /**
+     * 查询乘客当前是否有进行中的订单
+     *
+     * @param customerId 用户id
+     * @return 当前订单信息
+     */
+    @Override
+    public CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId) {
+        return orderInfoFeignClient.searchCustomerCurrentOrder(customerId);
     }
 
     /**
@@ -286,7 +302,8 @@ public class OrderServiceImpl implements OrderService {
         NewOrderTaskVo newOrderTaskVo = NewOrderTaskVo.builder()
                 .orderId(orderId)
                 .startLocation(orderInfoForm.getStartLocation())
-                .startPointLongitude(orderInfoForm.getEndPointLongitude())
+                //注意：派单是按"代驾起点"搜索附近司机的，这里必须用起点经纬度
+                .startPointLongitude(orderInfoForm.getStartPointLongitude())
                 .startPointLatitude(orderInfoForm.getStartPointLatitude())
                 .endLocation(orderInfoForm.getEndLocation())
                 .endPointLongitude(orderInfoForm.getEndPointLongitude())

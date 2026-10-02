@@ -47,8 +47,10 @@ public class MonitorServiceImpl implements MonitorService {
         OrderMonitor orderMonitor = orderMonitorFeignClient.getOrderMonitor(orderMonitorForm.getOrderId());
         int fileNum = orderMonitor.getFileNum() + 1;
         orderMonitor.setFileNum(fileNum);
-        //审核结果: 0（审核正常），1 （判定为违规敏感文件），2（疑似敏感，建议人工复核）。
-        if("3".equals(orderMonitorRecord.getResult())) {
+        //审核结果: 0（审核正常），1（判定为违规敏感文件），2（疑似敏感，建议人工复核）。
+        //原来判断的是 "3"，与腾讯云文本审核的返回码（0/1/2）不一致，导致违规数永远统计不到。
+        String result = orderMonitorRecord.getResult();
+        if ("1".equals(result) || "2".equals(result)) {
             int auditNum = orderMonitor.getAuditNum() + 1;
             orderMonitor.setAuditNum(auditNum);
         }

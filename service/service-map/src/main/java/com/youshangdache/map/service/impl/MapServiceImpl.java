@@ -24,7 +24,7 @@ public class MapServiceImpl implements MapService {
     @Resource
     private RestTemplate restTemplate;
 
-    @Value("tencent.cloud.map")
+    @Value("${tencent.map.key}")
     private String key;
 
     /**

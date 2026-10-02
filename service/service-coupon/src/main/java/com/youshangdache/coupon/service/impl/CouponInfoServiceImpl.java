@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +35,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponInfo> implements CouponInfoService {
@@ -46,10 +48,15 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BigDecimal useCoupon(UseCouponForm useCouponForm) {
         //1 根据id获取乘客优惠券信息
         CustomerCoupon customerCoupon = customerCouponMapper.selectById(useCouponForm.getCustomerCouponId());
         if (customerCoupon == null) {
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+        //1.1 只有"未使用"的优惠券才能核销，否则同一张券可以被反复抵扣
+        if (customerCoupon.getStatus() != CouponStatusEnum.NOT_USED) {
             throw new GuiguException(ResultCodeEnum.DATA_ERROR);
         }
         //2 根据优惠券id获取优惠券信息
@@ -91,9 +98,11 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
             couponInfo.setUseCount(oldUseCount + 1);
             //更新已使用的数量
             couponInfoMapper.updateById(couponInfo);
-            //更新customer_coupon
+            //更新customer_coupon：必须同时把状态置为"已使用"，
+            //否则已核销的券会一直留在"未使用"列表里，而且能被重复核销。
             CustomerCoupon updateCustomerCoupon = new CustomerCoupon();
             updateCustomerCoupon.setId(customerCoupon.getId());
+            updateCustomerCoupon.setStatus(CouponStatusEnum.USED);
             updateCustomerCoupon.setUsedTime(new Date());
             updateCustomerCoupon.setOrderId(useCouponForm.getOrderId());
             customerCouponMapper.updateById(updateCustomerCoupon);
@@ -224,12 +233,19 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
                     return true;
                 }
             }
+        } catch (GuiguException e) {
+            //业务异常（例如超出每人限领数量）必须原样抛出，
+            //否则会被下面的 catch 吞掉并统一变成"库存不足"，错误提示完全失真
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            //启用的了事务，如果try语句块内的抛出异常，事务就会回滚
+            log.error("领取优惠券异常，customerId={}, couponId={}", customerId, couponId, e);
+            //启用了事务，如果try语句块内抛出异常，事务就会回滚
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            throw new GuiguException(ResultCodeEnum.COUPON_LESS);
         } finally {
-            if (null != lock) {
+            //只能释放当前线程持有的锁：tryLock 返回 false 时并没有持有锁，
+            //直接 unlock 会抛 IllegalMonitorStateException 并覆盖掉真正的业务异常
+            if (null != lock && lock.isHeldByCurrentThread()) {
                 lock.unlock();
             }
         }

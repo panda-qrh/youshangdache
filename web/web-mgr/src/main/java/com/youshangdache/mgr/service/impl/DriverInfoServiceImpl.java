@@ -14,6 +14,8 @@ public class DriverInfoServiceImpl implements DriverInfoService {
     @Autowired
     private DriverInfoFeignClient driverInfoFeignClient;
 
-
-
+    @Override
+    public Boolean updateDriverAuthStatus(Long driverId, Integer authStatus) {
+        return driverInfoFeignClient.updateDriverAuthStatus(driverId, authStatus);
+    }
 }

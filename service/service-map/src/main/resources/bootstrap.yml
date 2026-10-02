@@ -15,3 +15,6 @@ spring:
         server-addr: ${remote-ip}:8848
         prefix: ${spring.application.name}
         file-extension: yaml
+        # 引入公共配置，腾讯地图 key 等公共参数取自 common-account.yaml
+        shared-configs[0]:
+          data-id: common-account.yaml

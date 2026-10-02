@@ -31,7 +31,10 @@ public class DroolsConfig {
         try {
             Resource[] resources = resolver.getResources(RULES_PATH);
             for (Resource resource : resources) {
-                kieFileSystem.write(ResourceFactory.newClassPathResource(resource.getURL().getPath()));
+                //这里必须用 classpath 相对路径（rules/xxx.drl）注册资源。
+                //原来传的是 resource.getURL().getPath()，那是绝对文件路径（打成 jar 后还会变成 jar:file:...），
+                //ClassPathResource 定位不到，会抛 FileNotFoundException 导致规则加载失败。
+                kieFileSystem.write(ResourceFactory.newClassPathResource("rules/" + resource.getFilename()));
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to load Drools rule files from: " + RULES_PATH, e);

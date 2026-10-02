@@ -10,7 +10,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 	</resultMap>
 
 	<sql id="columns">
-		id,driver_id,title,trade_type,amount,order_no,create_time,update_time,is_deleted
+		id,driver_id,content,trade_type,amount,trade_no,create_time,update_time,is_deleted
 	</sql>
 
 </mapper>

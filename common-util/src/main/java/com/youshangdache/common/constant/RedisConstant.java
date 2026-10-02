@@ -63,9 +63,12 @@ public class RedisConstant {
     public static final long ORDER_ACCEPT_MARK_EXPIRES_TIME = 15;
 
     /**
-     * 抢新订单锁key
+     * 抢新订单锁key前缀（拼上 orderId 使用）
+     *
+     * <p>注意：必须与订单接单标识 {@link #ORDER_ACCEPT_MARK} 区分开，
+     * 否则在锁的临界区内删除接单标识会连带删除 Redisson 的锁记录。</p>
      */
-    public static final String ROB_NEW_ORDER_LOCK = "rob:new:order:lock";
+    public static final String ROB_NEW_ORDER_LOCK = "rob:new:order:lock:";
     /**
      * 抢单时 等待获取锁的时间
      */

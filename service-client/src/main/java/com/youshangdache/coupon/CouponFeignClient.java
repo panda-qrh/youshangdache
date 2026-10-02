@@ -73,6 +73,6 @@ public interface CouponFeignClient {
     @GetMapping("/coupon/info/findAvailableCoupon/{customerId}/{orderAmount}")
     List<AvailableCouponVo> findAvailableCoupon(@PathVariable Long customerId, @PathVariable BigDecimal orderAmount);
 
-    @PostMapping("/useCoupon")
+    @PostMapping("/coupon/info/useCoupon")
     BigDecimal useCoupon(@RequestBody UseCouponForm useCouponForm);
 }

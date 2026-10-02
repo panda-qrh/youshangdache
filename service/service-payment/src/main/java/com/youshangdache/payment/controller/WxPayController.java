@@ -16,14 +16,14 @@ import java.util.Map;
 
 @Tag(name = "微信支付接口")
 @RestController
-@RequestMapping("payment/wxPay")
+@RequestMapping("/payment/wxPay")
 @Slf4j
 public class WxPayController {
     @Resource
     private WxPayService wxPayService;
 
     @Operation(summary = "创建微信支付")
-    @PostMapping("/createJsapi")
+    @PostMapping("/createWxPayment")
     public WxPrepayVo createWxPayment(@RequestBody PaymentInfoForm paymentInfoForm) {
         return wxPayService.createWxPayment(paymentInfoForm);
     }

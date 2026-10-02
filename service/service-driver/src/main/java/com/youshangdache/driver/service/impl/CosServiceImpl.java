@@ -43,38 +43,48 @@ public class CosServiceImpl implements CosService {
     public CosUploadVo upload(MultipartFile file, String path) {
         //1 初始化用户身份信息
         COSClient cosClient = this.getCosClient();
-
-        //文件元数据信息
-        ObjectMetadata meta = new ObjectMetadata();
-        meta.setContentLength(file.getSize());
-        meta.setContentEncoding("UTF-8");
-        meta.setContentType(file.getContentType());
-
-        //向存储桶中保存文件
-        String fileType = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")); //文件后缀名
-        String uploadPath = "/driver/" + path + "/" + UUID.randomUUID().toString().replaceAll("-", "") + fileType;
-        PutObjectRequest putObjectRequest = null;
         try {
-            putObjectRequest = new PutObjectRequest(tencentCloudProperties.getBucketPrivate(), uploadPath, file.getInputStream(), meta);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        putObjectRequest.setStorageClass(StorageClass.Standard);
-        PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest); //上传文件
-        cosClient.shutdown();
-        //图片审核
-        Boolean imageAuditing = ciService.imageAuditing(uploadPath);
-        if (!imageAuditing) {
-            //审核失败,删除违规图片
-            cosClient.deleteObject(tencentCloudProperties.getBucketPrivate(), uploadPath);
-            throw new GuiguException(ResultCodeEnum.IMAGE_AUDITION_FAIL);
+            //文件元数据信息
+            ObjectMetadata meta = new ObjectMetadata();
+            meta.setContentLength(file.getSize());
+            meta.setContentEncoding("UTF-8");
+            meta.setContentType(file.getContentType());
 
+            //向存储桶中保存文件
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || !originalFilename.contains(".")) {
+                throw new GuiguException(ResultCodeEnum.IMAGE_AUDITION_FAIL);
+            }
+            String fileType = originalFilename.substring(originalFilename.lastIndexOf(".")); //文件后缀名
+            String uploadPath = "/driver/" + path + "/" + UUID.randomUUID().toString().replaceAll("-", "") + fileType;
+
+            PutObjectRequest putObjectRequest;
+            try {
+                putObjectRequest = new PutObjectRequest(tencentCloudProperties.getBucketPrivate(), uploadPath, file.getInputStream(), meta);
+            } catch (IOException e) {
+                //原来这里只 printStackTrace，putObjectRequest 仍为 null，下一步 setStorageClass 必然 NPE
+                throw new GuiguException(ResultCodeEnum.IMAGE_AUDITION_FAIL);
+            }
+            putObjectRequest.setStorageClass(StorageClass.Standard);
+            cosClient.putObject(putObjectRequest); //上传文件
+
+            //图片审核
+            Boolean imageAuditing = ciService.imageAuditing(uploadPath);
+            if (!imageAuditing) {
+                //审核失败,删除违规图片。
+                //注意：删除必须在 cosClient.shutdown() 之前执行，否则客户端已关闭，删除必然失败、违规图片会留在桶里。
+                cosClient.deleteObject(tencentCloudProperties.getBucketPrivate(), uploadPath);
+                throw new GuiguException(ResultCodeEnum.IMAGE_AUDITION_FAIL);
+            }
+            //封装返回对象
+            CosUploadVo cosUploadVo = new CosUploadVo();
+            cosUploadVo.setUrl(uploadPath);
+            cosUploadVo.setShowUrl(this.getImageUrl(uploadPath));
+            return cosUploadVo;
+        } finally {
+            //无论成功失败都要释放客户端连接
+            cosClient.shutdown();
         }
-        //封装返回对象
-        CosUploadVo cosUploadVo = new CosUploadVo();
-        cosUploadVo.setUrl(uploadPath);
-        cosUploadVo.setShowUrl(this.getImageUrl(uploadPath));
-        return cosUploadVo;
     }
 
     private COSClient getCosClient() {

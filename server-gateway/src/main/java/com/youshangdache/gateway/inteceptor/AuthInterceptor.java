@@ -25,7 +25,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         //token为空，说明未登录
         if (!StringUtils.hasText(token)) {
-            response.setStatus(ResultCodeEnum.LOGIN_AUTH.getCode());
+            //注意：这里必须返回合法的 HTTP 状态码（200），业务错误码放在响应体里。
+            //原来用 response.setStatus(ResultCodeEnum.LOGIN_AUTH.getCode()) 直接把业务码 20004 当成 HTTP 状态码，
+            //这不是合法的三位状态码，客户端解析会出问题。
+            response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter()
                     .write(

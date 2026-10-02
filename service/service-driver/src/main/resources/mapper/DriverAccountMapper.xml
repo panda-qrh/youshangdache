@@ -12,7 +12,7 @@
     <!-- 用于select查询公用抽取的列 -->
     <sql id="columns">
         id
-        ,user_id,total_amount,lock_amount,available_amount,total_income_amount,total_pay_amount,create_time,update_time,is_deleted
+        ,driver_id,total_amount,lock_amount,available_amount,total_income_amount,total_pay_amount,create_time,update_time,is_deleted
     </sql>
 
     <update id="add">

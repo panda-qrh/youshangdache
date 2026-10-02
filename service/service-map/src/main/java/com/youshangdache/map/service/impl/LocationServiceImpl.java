@@ -17,7 +17,6 @@ import com.youshangdache.model.form.map.UpdateOrderLocationForm;
 import com.youshangdache.model.vo.map.NearByDriverVo;
 import com.youshangdache.model.vo.map.OrderLocationVo;
 import com.youshangdache.model.vo.map.OrderServiceLastLocationVo;
-import com.youshangdache.order.OrderInfoFeignClient;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -36,6 +35,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -50,8 +50,6 @@ public class LocationServiceImpl implements LocationService {
     private OrderServiceLocationRepository orderServiceLocationRepository;
     @Resource
     private MongoTemplate mongoTemplate;
-    @Resource
-    private OrderInfoFeignClient orderInfoFeignClient;
 
     /**
      * 代驾服务：计算订单实际里程
@@ -68,7 +66,7 @@ public class LocationServiceImpl implements LocationService {
         // 根据订单id获取代驾订单位置信息，根据创建时间升序排序
         List<OrderServiceLocation> list = orderServiceLocationRepository.findByOrderIdOrderByCreateTimeAsc(orderId);
         //返回查询订单位置信息list集合
-        //把list集合便利，得到每个位置信息,计算两个地点的位置
+        //把list集合遍历，得到每个位置信息,计算两个地点的位置
         double realDistance = 0;
         if (!list.isEmpty()) {
             for (int i = 0, size = list.size() - 1; i < size; i++) {
@@ -83,13 +81,14 @@ public class LocationServiceImpl implements LocationService {
                 realDistance += distance;
             }
         }
-        //todo 为了测试，不好测试实际代驾距离，模拟数据
-        if (realDistance == 0) {
-            return orderInfoFeignClient.getOrderInfoByOrderId(orderId)
-                    .getExpectAmount()
-                    .add(BigDecimal.valueOf(realDistance));
+        //LocationUtil.getDistance 返回的单位是米，而计费规则与 expectDistance 用的都是公里，这里统一换算成公里
+        if (realDistance <= 0) {
+            //没有采集到轨迹点时返回 0 公里，由调用方按 0 里程计价（不能再拿预估金额冒充里程）
+            log.warn("订单 {} 没有可用的代驾轨迹点，实际里程按 0 公里计算", orderId);
+            return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(realDistance);
+        return BigDecimal.valueOf(realDistance)
+                .divide(new BigDecimal("1000"), 2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -174,7 +173,9 @@ public class LocationServiceImpl implements LocationService {
         OrderLocationVo orderLocationVo = new OrderLocationVo();
         orderLocationVo.setLongitude(updateOrderLocationForm.getLongitude());
         orderLocationVo.setLatitude(updateOrderLocationForm.getLatitude());
-        stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(orderLocationVo));
+        //订单坐标是代驾过程中的临时数据，必须设置过期时间，否则会一直占用 Redis 内存
+        stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(orderLocationVo),
+                RedisConstant.UPDATE_ORDER_LOCATION_EXPIRES_TIME, TimeUnit.MINUTES);
 
         return true;
     }
@@ -189,37 +190,52 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<NearByDriverVo> searchNearByDriver(SearchNearByDriverForm searchNearByDriverForm) {
         //搜索经纬度中5公里以内的司机
+        //注意：Spring Data Redis 的 Point(x, y) 中 x 是经度、y 是纬度，写入与检索必须保持一致
         Circle circle = new Circle(
-                new Point(searchNearByDriverForm.getLatitude().doubleValue(), searchNearByDriverForm.getLongitude().doubleValue()),
+                new Point(searchNearByDriverForm.getLongitude().doubleValue(), searchNearByDriverForm.getLatitude().doubleValue()),
                 new Distance(SystemConstant.NEARBY_DRIVER_RADIUS, RedisGeoCommands.DistanceUnit.KILOMETERS)
         );
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
                 .includeDistance()
                 .includeCoordinates()
-                .sortDescending();
+                //按距离由近到远排序并限制数量，保证优先用最近的司机、且不会一次性推送给海量司机
+                .sortAscending()
+                .limit(SystemConstant.NEARBY_DRIVER_LIMIT);
         GeoResults<RedisGeoCommands.GeoLocation<String>> results = stringRedisTemplate.opsForGeo().radius(RedisConstant.DRIVER_GEO_LOCATION, circle, args);
-        if (results==null){return null;}
-        List<GeoResult<RedisGeoCommands.GeoLocation<String>>> content = results.getContent();
         //3.返回计算后的信息
         List<NearByDriverVo> list = new ArrayList();
-        if (!content.isEmpty()) {
-            for (GeoResult<RedisGeoCommands.GeoLocation<String>> item : content) {
-                Long driverId = Long.parseLong(item.getContent().getName());
-                BigDecimal currentDistance = new BigDecimal(item.getDistance().getValue()).setScale(2, RoundingMode.HALF_UP);
-                DriverSet driverSet = driverInfoFeignClient.getDriverSettingInfo(driverId);
-                if (!driverSet.getAcceptDistance().equals(BigDecimal.ZERO)
-                        && driverSet.getAcceptDistance().compareTo(currentDistance) < 0) {
-                    continue;
-                }
-                if (driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION &&
-                        driverSet.getOrderDistance().compareTo(searchNearByDriverForm.getMileageDistance()) < 0) {
-                    continue;
-                }
+        if (results == null || results.getContent().isEmpty()) {
+            //没有附近司机时返回空集合，避免调用方直接 forEach 造成 NPE
+            return list;
+        }
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> item : results.getContent()) {
+            Long driverId = Long.parseLong(item.getContent().getName());
+            BigDecimal currentDistance = new BigDecimal(item.getDistance().getValue()).setScale(2, RoundingMode.HALF_UP);
+            DriverSet driverSet = driverInfoFeignClient.getDriverSettingInfo(driverId);
+            //司机没有配置接单设置时，按"不限制"处理，避免空指针
+            if (driverSet == null) {
                 NearByDriverVo nearByDriverVo = new NearByDriverVo();
                 nearByDriverVo.setDriverId(driverId);
                 nearByDriverVo.setDistance(currentDistance);
                 list.add(nearByDriverVo);
+                continue;
             }
+            if (driverSet.getAcceptDistance() != null
+                    && !driverSet.getAcceptDistance().equals(BigDecimal.ZERO)
+                    && driverSet.getAcceptDistance().compareTo(currentDistance) < 0) {
+                //超出司机设置的最大接单距离
+                continue;
+            }
+            if (driverSet.getOrderDistance() != null
+                    && driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION
+                    && driverSet.getOrderDistance().compareTo(searchNearByDriverForm.getMileageDistance()) < 0) {
+                //订单里程超出司机设置的最大接单里程
+                continue;
+            }
+            NearByDriverVo nearByDriverVo = new NearByDriverVo();
+            nearByDriverVo.setDriverId(driverId);
+            nearByDriverVo.setDistance(currentDistance);
+            list.add(nearByDriverVo);
         }
         return list;
     }

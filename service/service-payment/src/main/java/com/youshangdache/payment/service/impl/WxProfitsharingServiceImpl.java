@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -64,6 +63,9 @@ public class WxProfitsharingServiceImpl implements WxProfitsharingService {
 
         //根据订单号获取微信支付信息
         PaymentInfo paymentInfo = paymentInfoMapper.selectOne(new LambdaQueryWrapper<PaymentInfo>().eq(PaymentInfo::getOrderNo, profitsharingForm.getOrderNo()));
+        if (paymentInfo == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
 
         // 构建分账service
         ProfitsharingService service = new ProfitsharingService.Builder().config(rsaAutoCertificateConfig).build();
@@ -83,8 +85,10 @@ public class WxProfitsharingServiceImpl implements WxProfitsharingService {
         CreateOrderRequest request = new CreateOrderRequest();
         request.setAppid(wxPayV3Properties.getAppid());
         request.setTransactionId(paymentInfo.getTransactionId());
-        //商户分账单号
-        String outOrderNo = profitsharingForm.getOrderNo() + "_" + new Random().nextInt(10);
+        //商户分账单号：必须是"同一订单固定不变"的确定性值。
+        //原来用 new Random().nextInt(10) 只有 10 种取值，重试时会撞号、也无法保证幂等；
+        //微信对同一 out_order_no 的重复请求按同一次请求处理，正好满足重试幂等的语义。
+        String outOrderNo = profitsharingForm.getOrderNo() + "_1";
         request.setOutOrderNo(outOrderNo);
 
         //分账接收方列表
@@ -109,7 +113,9 @@ public class WxProfitsharingServiceImpl implements WxProfitsharingService {
             profitsharingInfo.setOrderNo(paymentInfo.getOrderNo());
             profitsharingInfo.setTransactionId(paymentInfo.getTransactionId());
             profitsharingInfo.setOutTradeNo(outOrderNo);
-            profitsharingInfo.setAmount(profitsharingInfo.getAmount());
+            //原来写成了 profitsharingInfo.setAmount(profitsharingInfo.getAmount())，自己给自己赋值，
+            //结果分账金额列永远是 null，这里应取本次分账的金额（注意该字段类型是 String）
+            profitsharingInfo.setAmount(profitsharingForm.getAmount().toPlainString());
             profitsharingInfo.setState(ordersEntity.getState().name());
             profitsharingInfo.setResponeContent(JSON.toJSONString(ordersEntity));
             profitsharingInfoMapper.insert(profitsharingInfo);

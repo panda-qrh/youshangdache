@@ -6,6 +6,13 @@ public class SystemConstant {
     public static final double NEARBY_DRIVER_RADIUS = 5;
 
     /**
+     * 一次派单最多推送的附近司机数量
+     *
+     * <p>限制批量推送规模，避免"命中多少就推多少"造成的大批量远程调用与消息堆积。</p>
+     */
+    public static final int NEARBY_DRIVER_LIMIT = 10;
+
+    /**
      * 取消订单延迟时间，单位：秒
      */
     public static final int CANCEL_ORDER_DELAY_TIME = 15 * 60;
@@ -23,7 +30,5 @@ public class SystemConstant {
 
     /** 分账延迟时间，单位：秒 */
     public static final int PROFITSHARING_DELAY_TIME = 2 * 60;
-    /** 司机起始地点距离 ，单位：公里 */
-    public static final int DRIVER_START_LOCATION_DISTION = 1;
 
 }

@@ -64,6 +64,19 @@ public class DriverInfoController {
         return driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm);
     }
 
+    /**
+     * 后台审核司机认证（管理端调用）
+     *
+     * @param driverId   司机id
+     * @param authStatus 审核结果：1 审核中，2 认证通过，-1 认证未通过
+     * @return true
+     */
+    @Operation(summary = "后台审核司机认证信息")
+    @PostMapping("/updateDriverAuthStatus/{driverId}/{authStatus}")
+    public Boolean updateDriverAuthStatus(@PathVariable Long driverId, @PathVariable Integer authStatus) {
+        return driverInfoService.updateDriverAuthStatus(driverId, authStatus);
+    }
+
     @Operation(summary = "创建司机人脸模型")
     @PostMapping("/creatDriverFaceModel")
     public Boolean creatDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm) {

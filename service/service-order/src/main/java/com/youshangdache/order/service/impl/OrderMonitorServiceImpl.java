@@ -44,11 +44,11 @@ public class OrderMonitorServiceImpl extends ServiceImpl<OrderMonitorMapper, Ord
      */
     @Override
     public Boolean saveOrderMonitorRecord(OrderMonitorRecord orderMonitorRecord) {
-        if (orderMonitorRecord != null) {
-            orderMonitorRecordRepository.save(orderMonitorRecord);
-        } else {
-            new GuiguException(ResultCodeEnum.UPDATE_ERROR);
+        if (orderMonitorRecord == null) {
+            //这里必须 throw，否则异常对象被创建后直接丢弃，调用方以为保存成功了
+            throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
         }
+        orderMonitorRecordRepository.save(orderMonitorRecord);
         return true;
     }
 

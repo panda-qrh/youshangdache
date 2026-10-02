@@ -1,10 +1,24 @@
-package com.qrh.youshangdache.rules
+package com.youshangdache.rules
 
-import com.qrh.youshangdache.model.form.rules.FeeRuleRequest;
+import com.youshangdache.model.form.rules.FeeRuleRequest;
 import java.math.BigDecimal;
-import com.qrh.youshangdache.model.vo.rules.FeeRuleResponse;
+import com.youshangdache.model.vo.rules.FeeRuleResponse;
 
-global com.qrh.youshangdache.model.vo.rules.FeeRuleResponse feeRuleResponse;
+global com.youshangdache.model.vo.rules.FeeRuleResponse feeRuleResponse;
+
+/**
+ * 计价规则
+ *
+ * 重要：规则里必须通过 setXxx() 修改 global 指向的"同一个对象"，
+ * 不能写 feeRuleResponse = FeeRuleResponse.builder()...build() 去整体重新赋值——
+ * Drools 不会把 consequence 里对 global 变量的重新赋值传播给其它规则，
+ * 会导致后面的规则（例如"计算总金额"）读到的仍是初始的空对象而抛 NPE。
+ *
+ * 规则执行顺序由 salience 控制：
+ *   100 起步价（必须最先执行，确定基准）
+ *    50 里程费 / 等候费 / 远途费（在基准上累加）
+ *     1 计算总金额（必须最后执行，读取前面算好的各项费用）
+ */
 
 /**
 1.起步价
@@ -12,37 +26,27 @@ global com.qrh.youshangdache.model.vo.rules.FeeRuleResponse feeRuleResponse;
     07:00:00-23:59:59  19元(含5公里)
 */
 rule "起步价 00:00:00-06:59:59  19元(含3公里)"
-    salience 10
+    salience 100
     no-loop true
     when
         $rule:FeeRuleRequest(startTime >= "00:00:00" && startTime <= "06:59:59")
     then
-        feeRuleResponse = FeeRuleResponse.builder()
-                        .baseDistance(new BigDecimal("3.0"))
-                        .baseDistanceFee(new BigDecimal("19.0"))
-                        .exceedDistance(new BigDecimal("0.0"))
-                        .exceedDistancePrice(new BigDecimal("4.0"))
-                        .build();
-        System.out.printf("00:00:00-06:59:59，%s 公里，起步价: %s 元\n",
-                       feeRuleResponse.getBaseDistance(),
-                       feeRuleResponse.getBaseDistanceFee());
+        feeRuleResponse.setBaseDistance(new BigDecimal("3.0"));
+        feeRuleResponse.setBaseDistanceFee(new BigDecimal("19.0"));
+        feeRuleResponse.setExceedDistance(new BigDecimal("0.0"));
+        feeRuleResponse.setExceedDistancePrice(new BigDecimal("4.0"));
 end
 
 rule "起步价 07:00:00-23:59:59  19元(含5公里)"
-    salience 10
+    salience 100
     no-loop true
     when
         $rule:FeeRuleRequest(startTime >= "07:00:00" && startTime <= "23:59:59")
     then
-        feeRuleResponse = FeeRuleResponse.builder()
-                        .baseDistance(new BigDecimal("5.0"))
-                        .baseDistanceFee(new BigDecimal("19.0"))
-                        .exceedDistance(new BigDecimal("0.0"))
-                        .exceedDistancePrice(new BigDecimal("3.0"))
-                        .build();
-        System.out.printf("07:00:00-23:59:59，%s 公里，起步价: %s 元\n",
-                       feeRuleResponse.getBaseDistance(),
-                       feeRuleResponse.getBaseDistanceFee());
+        feeRuleResponse.setBaseDistance(new BigDecimal("5.0"));
+        feeRuleResponse.setBaseDistanceFee(new BigDecimal("19.0"));
+        feeRuleResponse.setExceedDistance(new BigDecimal("0.0"));
+        feeRuleResponse.setExceedDistancePrice(new BigDecimal("3.0"));
 end
 
 /**
@@ -52,7 +56,7 @@ end
     07:00:00-23:59:59   3元/1公里
 */
 rule "里程费 00:00:00-06:59:59 4元/1公里"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:FeeRuleRequest(
@@ -61,17 +65,12 @@ rule "里程费 00:00:00-06:59:59 4元/1公里"
             && distance.compareTo(new BigDecimal("3.0")) > 0
         )
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .exceedDistance($rule.getDistance().subtract(new BigDecimal("3.0")))
-                        .exceedDistancePrice(new BigDecimal("4.0"))
-                        .build();
-        System.out.printf("里程费，超出里程: %s 公里，单价：%s 元\n",
-                       feeRuleResponse.getExceedDistance(),
-                       feeRuleResponse.getExceedDistancePrice());
+        feeRuleResponse.setExceedDistance($rule.getDistance().subtract(new BigDecimal("3.0")));
+        feeRuleResponse.setExceedDistancePrice(new BigDecimal("4.0"));
 end
 
 rule "里程费 07:00:00-23:59:59 3元/1公里"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:FeeRuleRequest(
@@ -80,13 +79,8 @@ rule "里程费 07:00:00-23:59:59 3元/1公里"
             && distance.compareTo(new BigDecimal("5.0")) > 0
         )
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .exceedDistance($rule.getDistance().subtract(new BigDecimal("5.0")))
-                        .exceedDistancePrice(new BigDecimal("3.0"))
-                        .build();
-        System.out.printf("里程费，超出里程: %s 公里，单价：%s 元\n",
-                        feeRuleResponse.getExceedDistance(),
-                        feeRuleResponse.getExceedDistancePrice());
+        feeRuleResponse.setExceedDistance($rule.getDistance().subtract(new BigDecimal("5.0")));
+        feeRuleResponse.setExceedDistancePrice(new BigDecimal("3.0"));
 end
 
 /**
@@ -94,32 +88,25 @@ end
     等候10分钟后  1元/1分钟
 */
 rule "等候费 等候10分钟后 1元/1分钟"
-    salience 10
+    salience 50
     no-loop true
     when
-        $rule:FeeRuleRequest(waitMinute > 10)
+        $rule:FeeRuleRequest(waitMinute != null && waitMinute > 10)
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .baseWaitMinute(10)
-                        .exceedWaitMinute($rule.getWaitMinute() - 10)
-                        .exceedWaitMinutePrice(BigDecimal.ONE)
-                        .build();
-        System.out.printf("等候费，超出 %s 分钟，单价：%s 元\n",
-                        feeRuleResponse.getExceedWaitMinute(),
-                        feeRuleResponse.getExceedWaitMinutePrice());
+        feeRuleResponse.setBaseWaitMinute(10);
+        feeRuleResponse.setExceedWaitMinute($rule.getWaitMinute() - 10);
+        feeRuleResponse.setExceedWaitMinutePrice(BigDecimal.ONE);
 end
+
 rule "无等候费"
-    salience 10
+    salience 50
     no-loop true
     when
-        $rule:FeeRuleRequest(waitMinute <= 10)
+        $rule:FeeRuleRequest(waitMinute == null || waitMinute <= 10)
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .baseWaitMinute(10)
-                        .exceedWaitMinute(0)
-                        .exceedWaitMinutePrice(BigDecimal.ONE)
-                        .build();
-        System.out.println("等候费：无");
+        feeRuleResponse.setBaseWaitMinute(10);
+        feeRuleResponse.setExceedWaitMinute(0);
+        feeRuleResponse.setExceedWaitMinutePrice(BigDecimal.ONE);
 end
 
 /**
@@ -127,34 +114,25 @@ end
     订单行程超出12公里后每公里1元
 */
 rule "远途费 订单行程超出12公里后每公里1元"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:FeeRuleRequest(distance.compareTo(new BigDecimal("12.0")) > 0)
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .baseLongDistance(new BigDecimal("12.0"))
-                        .exceedLongDistance(
-                            $rule.getDistance().subtract(new BigDecimal("12.0"))
-                        )
-                        .exceedLongDistancePrice(BigDecimal.ONE)
-                        .build();
-        System.out.printf("远途费，超出公里:%s 公里，单价：%s 元\n",
-                        feeRuleResponse.getExceedLongDistance(),
-                        feeRuleResponse.getExceedLongDistancePrice());
+        feeRuleResponse.setBaseLongDistance(new BigDecimal("12.0"));
+        feeRuleResponse.setExceedLongDistance($rule.getDistance().subtract(new BigDecimal("12.0")));
+        feeRuleResponse.setExceedLongDistancePrice(BigDecimal.ONE);
 end
+
 rule "无远途费"
-    salience 10
+    salience 50
     no-loop true
     when
         $rule:FeeRuleRequest(distance.compareTo(new BigDecimal("12.0")) <= 0)
     then
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .baseLongDistance(new BigDecimal("12.0"))
-                        .exceedLongDistance(BigDecimal.ZERO)
-                        .exceedLongDistancePrice(BigDecimal.ZERO)
-                        .build();
-        System.out.println("远途费：无");
+        feeRuleResponse.setBaseLongDistance(new BigDecimal("12.0"));
+        feeRuleResponse.setExceedLongDistance(BigDecimal.ZERO);
+        feeRuleResponse.setExceedLongDistancePrice(BigDecimal.ZERO);
 end
 
 /**
@@ -162,7 +140,7 @@ end
     订单总金额 = 基础里程费 + 超出基础里程的费 + 等候费 + 远程费
 */
 rule "计算总金额"
-    salience 10
+    salience 1
     no-loop true
     when
         $rule:FeeRuleRequest(distance.compareTo(new BigDecimal("0.0")) > 0)
@@ -175,12 +153,9 @@ rule "计算总金额"
                                 .multiply(feeRuleResponse.getExceedWaitMinutePrice());
         BigDecimal longDistanceFee = feeRuleResponse.getExceedLongDistance()
                                         .multiply(feeRuleResponse.getExceedLongDistancePrice());
-        BigDecimal totalAmount  = distanceFee.add(waitFee).add(longDistanceFee);
-        feeRuleResponse = feeRuleResponse.toBuilder()
-                        .distanceFee(distanceFee)
-                        .waitFee(waitFee)
-                        .longDistanceFee(longDistanceFee)
-                        .totalAmount(totalAmount)
-                        .build();
-        System.out.println("计算总金额:" + feeRuleResponse.getTotalAmount() + "元");
+        BigDecimal totalAmount = distanceFee.add(waitFee).add(longDistanceFee);
+        feeRuleResponse.setDistanceFee(distanceFee);
+        feeRuleResponse.setWaitFee(waitFee);
+        feeRuleResponse.setLongDistanceFee(longDistanceFee);
+        feeRuleResponse.setTotalAmount(totalAmount);
 end

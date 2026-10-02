@@ -6,6 +6,22 @@ feign:
   sentinel:
     enabled: true
 spring:
+  data:
+    # 网关的登录鉴权要用 Redis 存 token（admin:login: / user:login:），
+    # 这里必须配置 Redis，否则 common-util 中的 RedissonConfig 在 host 为空时会直接抛
+    # "redis地址为空" 导致网关启动失败。
+    redis:
+      host: ${remote_ip:192.168.200.130}
+      port: 6379
+      database: 0
+      timeout: 1800000
+      password:
+      jedis:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 5
+          min-idle: 0
   cloud:
     openfeign:
       lazy-attributes-resolution: true

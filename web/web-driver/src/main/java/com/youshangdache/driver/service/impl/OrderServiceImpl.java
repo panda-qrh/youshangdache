@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -92,7 +93,8 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public PageVo findDriverOrderPage(Page<OrderInfo> pageParam, Long driverId) {
-        return orderInfoFeignClient.findDriverOrderPage(driverId, pageParam.getPages(), pageParam.getSize());
+        //分页要传当前页 getCurrent()，不能传总页数 getPages()
+        return orderInfoFeignClient.findDriverOrderPage(driverId, pageParam.getCurrent(), pageParam.getSize());
     }
 
     /**
@@ -121,14 +123,14 @@ public class OrderServiceImpl implements OrderService {
         OrderInfo orderInfo = orderInfoCF.get(10, TimeUnit.SECONDS);
         OrderServiceLastLocationVo orderServiceLastLocationVo = orderServiceLastLocationVoCF.get();
 
-        //司机的位置与代驾终点位置的距离
+        //司机的位置与代驾终点位置的距离：终点校验用的应该是 DRIVER_END_LOCATION_DISTANCE（2公里）
         double distance = LocationUtil.getDistance(
                 orderInfo.getEndPointLatitude(),
                 orderInfo.getEndPointLongitude(),
                 orderServiceLastLocationVo.getLatitude(),
                 orderServiceLastLocationVo.getLongitude()
         );
-        if (distance > SystemConstant.DRIVER_START_LOCATION_DISTANCE) {
+        if (distance > SystemConstant.DRIVER_END_LOCATION_DISTANCE) {
             throw new GuiguException(ResultCodeEnum.DRIVER_END_LOCATION_DISTANCE_ERROR);
         }
 
@@ -139,7 +141,9 @@ public class OrderServiceImpl implements OrderService {
 
         //4.计算代驾实际费用
         CompletableFuture<FeeRuleResponseVo> feeRuleResponseVoCF = realDistanceCF.thenApplyAsync((realDistance) -> {
-            Integer waitMinute = Math.abs((int) ((orderInfo.getArriveTime().getTime() - orderInfo.getAcceptTime().getTime()) / (1000 * 60)));
+            //等候时长 = 司机到达上车点 到 开始代驾 之间的时间差（乘客让司机等的时长），
+            //不能用"接单到到达"的耗时，那是司机的赶路时间，不是等候费。
+            Integer waitMinute = getWaitMinute(orderInfo);
             FeeRuleRequestForm feeRuleRequestForm=FeeRuleRequestForm.builder()
                     .distance(realDistance)
                     .startTime(orderInfo.getStartServiceTime())
@@ -160,7 +164,10 @@ public class OrderServiceImpl implements OrderService {
         //5.1.获取订单数
         CompletableFuture<Long> orderNumCF = CompletableFuture.supplyAsync(() -> {
             String startTime = new DateTime(orderInfo.getStartServiceTime()).toString("yyyy-MM-dd") + " 00:00:00";
-            String endTime = new DateTime(orderInfo.getEndServiceTime()).toString("yyyy-MM-dd") + " 24:00:00";
+            //注意：代驾尚未结束时 endServiceTime 还是 null，这里不能用它来取日期，
+            //否则 new DateTime(null) 会直接抛 IllegalArgumentException。
+            Date endServiceDate = orderInfo.getEndServiceTime() != null ? orderInfo.getEndServiceTime() : new Date();
+            String endTime = new DateTime(endServiceDate).toString("yyyy-MM-dd") + " 24:00:00";
             return orderInfoFeignClient.getOrderNumByTime(startTime, endTime);
         }, threadPoolExecutor);
 
@@ -286,7 +293,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderInfoVo getOrderInfoByOrderId(Long orderId, Long driverId) {
         OrderInfo orderInfo = orderInfoFeignClient.getOrderInfoByOrderId(orderId);
-        if (!orderInfo.getCustomerId().equals(driverId)) {
+        //这里必须用 driverId 比较：原来拿 customerId 和 driverId 比，导致司机端查询自己的订单全部被判为"订单不存在"
+        if (!driverId.equals(orderInfo.getDriverId())) {
             throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
         }
         OrderBillVo orderBillVo = null;
@@ -369,5 +377,28 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId) {
         return locationFeignClient.getOrderServiceLastLocation(orderId);
+    }
+
+    /**
+     * 计算等候时长（分钟）
+     *
+     * <p>等候费指的是"司机到达上车点之后，乘客让司机等待的时间"，
+     * 因此应取 <b>司机到达时间 → 开始代驾时间</b> 的差值，
+     * 而不是"接单 → 到达"的赶路耗时。</p>
+     *
+     * @param orderInfo 订单信息
+     * @return 等候分钟数，取不到时间时返回 0
+     */
+    private Integer getWaitMinute(OrderInfo orderInfo) {
+        Date arriveTime = orderInfo.getArriveTime();
+        Date startServiceTime = orderInfo.getStartServiceTime();
+        if (arriveTime == null || startServiceTime == null) {
+            return 0;
+        }
+        long millis = startServiceTime.getTime() - arriveTime.getTime();
+        if (millis <= 0) {
+            return 0;
+        }
+        return (int) (millis / (1000 * 60));
     }
 }

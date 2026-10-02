@@ -32,6 +32,15 @@ public interface DriverInfoService extends IService<DriverInfo> {
 
     Boolean updateDriverAuthInfo(UpdateDriverAuthInfoForm updateDriverAuthInfoForm);
 
+    /**
+     * 后台审核司机认证信息
+     *
+     * @param driverId   司机id
+     * @param authStatus 审核结果（AuthStatusEnum 的 code）
+     * @return true审核成功
+     */
+    Boolean updateDriverAuthStatus(Long driverId, Integer authStatus);
+
     Boolean creatDriverFaceModel(DriverFaceModelForm driverFaceModelForm);
 
     /**

@@ -43,12 +43,15 @@
                info.start_location,
                info.end_location,
                info.status,
-               info.pay_amount,
-               info.coupon_amount
+               <!-- pay_amount / coupon_amount 属于 order_bill 表，order_info 没有这两列 -->
+               bill.pay_amount,
+               bill.coupon_amount
         from order_info info
                  inner join order_bill bill on info.id = bill.order_id
-        where info.customer_id = #{cutomerId}
+        <!-- 参数名必须与 Mapper 接口上的 @Param("customerId") 一致 -->
+        where info.customer_id = #{customerId}
           and info.order_no = #{orderNo}
+          and info.is_deleted = 0
     </select>
 
 </mapper>

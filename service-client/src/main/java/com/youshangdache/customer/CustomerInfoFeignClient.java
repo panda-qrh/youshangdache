@@ -5,6 +5,7 @@ import com.youshangdache.model.vo.customer.CustomerLoginVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(value = "service-customer")
@@ -35,7 +36,7 @@ public interface CustomerInfoFeignClient {
      * @param updateWxPhoneForm
      * @return true绑定 | false未绑定
      */
-    @GetMapping("/customer/info/updateWxPhoneNumber")
+    @PostMapping("/customer/info/updateWxPhoneNumber")
     Void updateWxPhoneNumber(@RequestBody UpdateWxPhoneForm updateWxPhoneForm);
 
     @GetMapping("/customer/info/getCustomerOpenId/{customerId}")

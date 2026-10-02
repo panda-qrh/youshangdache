@@ -45,6 +45,13 @@ public class LoginAspect {
         }
         //4 查询redis对应用户ID，把用户id放到threadlocal中
         AuthContextHolder.setUserId(Long.parseLong(customerId));
-        return proceedingJoinPoint.proceed(); //删除threadLocal键值应该在网关的拦截器中才对
+        try {
+            return proceedingJoinPoint.proceed();
+        } finally {
+            //必须在这里清理 ThreadLocal：Tomcat 线程是复用的，
+            //不清理会导致内存泄漏，更严重的是下一个请求可能读到上一个用户 id（串号/越权）。
+            //不能依赖网关的拦截器清理——网关和业务服务不在同一个 JVM，ThreadLocal 不可能跨进程传递。
+            AuthContextHolder.removeUserId();
+        }
     }
 }

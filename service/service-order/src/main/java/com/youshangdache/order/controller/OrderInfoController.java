@@ -274,13 +274,13 @@ public class OrderInfoController {
      * @return true
      */
     @Operation(summary = "更改订单支付状态")
-    @GetMapping("/updateOrderPayStatus/{orderNo} ")
+    @GetMapping("/updateOrderPayStatus/{orderNo}")
     public Boolean updateOrderPayStatus(@PathVariable String orderNo) {
         return orderInfoService.updateOrderPayStatus(orderNo);
     }
 
     @Operation(summary = "查询订单的系统奖励")
-    @GetMapping("/getOrderRewardFee/{orderNo} ")
+    @GetMapping("/getOrderRewardFee/{orderNo}")
     public OrderRewardVo getOrderRewardFee(@PathVariable String orderNo) {
         return orderInfoService.getOrderRewardFee(orderNo);
     }

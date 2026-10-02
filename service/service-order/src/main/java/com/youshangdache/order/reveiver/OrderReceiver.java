@@ -37,6 +37,7 @@ public class OrderReceiver {
             key = {RoutingConst.CANCEL_ORDER}
     ))
     public void systemCancelOrder(String orderId, Message message, Channel channel) throws IOException {
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
         try {
             //1.处理业务
             if (orderId != null) {
@@ -44,10 +45,12 @@ public class OrderReceiver {
                 orderInfoService.systemCancelOrder(Long.parseLong(orderId));
             }
             //2.手动应答
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.error("【订单微服务模块】关闭订单业务异常：{}", e);
+            channel.basicAck(deliveryTag, false);
+        } catch (Exception e) {
+            //业务异常不能让消息悬空：既不 ack 也不 nack 会导致消息在 channel 关闭后被重复投递且无法控制。
+            //取消订单本身是幂等的（内部会先判断状态），因此这里直接确认掉并记录日志，避免无效重投。
+            log.error("【订单微服务模块】关闭订单业务异常，orderId={}", orderId, e);
+            channel.basicAck(deliveryTag, false);
         }
     }
 
@@ -63,8 +66,15 @@ public class OrderReceiver {
             key = {RoutingConst.PROFITSHARING_SUCCESS}
     ))
     public void profitsharingSuccess(String orderNo, Message message, Channel channel) throws IOException {
-        orderInfoService.updateProfitsharingStatus(orderNo);
-        channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        try {
+            orderInfoService.updateProfitsharingStatus(orderNo);
+            channel.basicAck(deliveryTag, false);
+        } catch (Exception e) {
+            //更新分账状态是幂等操作（按 orderNo 更新为已分账），失败直接确认并记录，避免无限重回队列
+            log.error("【订单微服务模块】更新分账状态异常，orderNo={}", orderNo, e);
+            channel.basicAck(deliveryTag, false);
+        }
     }
 
 }

@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 
 @FeignClient(value = "service-order", path = "/order/info")
-interface OrderInfoFeignClient {
+public interface OrderInfoFeignClient {
     /**
      * 保存订单信息
      *
@@ -209,10 +209,10 @@ interface OrderInfoFeignClient {
      * @param orderNo 订单编号
      * @return true
      */
-    @GetMapping("/updateOrderPayStatus/{orderNo} ")
+    @GetMapping("/updateOrderPayStatus/{orderNo}")
     Boolean updateOrderPayStatus(@PathVariable String orderNo);
 
-    @GetMapping("/getOrderRewardFee/{orderNo} ")
+    @GetMapping("/getOrderRewardFee/{orderNo}")
     OrderRewardVo getOrderRewardFee(@PathVariable String orderNo);
 
     @GetMapping("/updateCouponAmount/{orderId}/{couponAmount}")

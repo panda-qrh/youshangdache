@@ -23,7 +23,7 @@ public class BaseEntity implements Serializable {
     private Date createTime;
 
     @JsonIgnore
-    @TableField("update_time")
+    @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private Date updateTime;
 
     @JsonIgnore

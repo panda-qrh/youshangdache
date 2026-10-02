@@ -10,6 +10,7 @@ import com.youshangdache.common.util.PhoneNumberUtils;
 import com.youshangdache.customer.mapper.CustomerInfoMapper;
 import com.youshangdache.customer.mapper.CustomerLoginLogMapper;
 import com.youshangdache.customer.service.CustomerInfoService;
+import com.youshangdache.customer.service.CustomerLoginLogRecorder;
 import com.youshangdache.model.entity.customer.CustomerInfo;
 import com.youshangdache.model.entity.customer.CustomerLoginLog;
 import com.youshangdache.model.enums.LoginStatusEnum;
@@ -39,6 +40,8 @@ public class CustomerInfoServiceImpl extends ServiceImpl<CustomerInfoMapper, Cus
     private CustomerInfoMapper customerInfoMapper;
     @Resource
     private CustomerLoginLogMapper customerLoginLogMapper;
+    @Resource
+    private CustomerLoginLogRecorder customerLoginLogRecorder;
     @Resource
     private HttpServletRequest request;
 
@@ -134,7 +137,7 @@ public class CustomerInfoServiceImpl extends ServiceImpl<CustomerInfoMapper, Cus
             if (failMsg == null) {
                 failMsg = "openid为空";
             }
-            recordLoginLog(new CustomerLoginLog(null, IpUtil.getIpAddress(request), LoginStatusEnum.FAIL, failMsg));
+            customerLoginLogRecorder.recordLoginLog(new CustomerLoginLog(null, IpUtil.getIpAddress(request), LoginStatusEnum.FAIL, failMsg));
             throw new GuiguException(ResultCodeEnum.LOGIN_AUTH);
         }
         //2根据openid查询数据库表，判断是否是第一次登录
@@ -152,20 +155,8 @@ public class CustomerInfoServiceImpl extends ServiceImpl<CustomerInfoMapper, Cus
         }
         //4异步记录登录日志信息
         String msg = isFirstLogin ? "小程序首次登录" : "小程序登录";
-        recordLoginLog(new CustomerLoginLog(customerInfo.getId(), IpUtil.getIpAddress(request), LoginStatusEnum.SUCCESS, msg));
+        customerLoginLogRecorder.recordLoginLog(new CustomerLoginLog(customerInfo.getId(), IpUtil.getIpAddress(request), LoginStatusEnum.SUCCESS, msg));
         //5返回用户id
         return customerInfo.getId();
-    }
-
-    /**
-     * 异步记录登录日志<br>
-     * <p>
-     * 线程池：{@link ThreadPoolConfig#loginLogExecutor()}
-     *
-     * @param loginLog 待记录的对象
-     */
-    @Async("loginLogExecutor")
-    public void recordLoginLog(CustomerLoginLog loginLog) {
-        customerLoginLogMapper.insert(loginLog);
     }
 }

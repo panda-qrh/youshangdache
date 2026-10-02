@@ -49,7 +49,7 @@ public interface LocationFeignClient {
      * @param searchNearByDriverForm 附近司机
      * @return 附近司机集合
      */
-    @DeleteMapping("/map/location/searchNearByDriver")
+    @PostMapping("/map/location/searchNearByDriver")
     List<NearByDriverVo> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm);
 
     /**
@@ -62,7 +62,7 @@ public interface LocationFeignClient {
      * @param updateOrderLocationForm 订单的坐标，即用户下单时的坐标
      * @return true
      */
-    @DeleteMapping("/map/location/updateOrderLocationToCache")
+    @PostMapping("/map/location/updateOrderLocationToCache")
     Boolean updateOrderLocationToCache(@RequestBody UpdateOrderLocationForm updateOrderLocationForm);
 
     /**

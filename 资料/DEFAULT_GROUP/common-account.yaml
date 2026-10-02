@@ -9,8 +9,9 @@ wx:
     appid: wxcc651fcbab275e33
     #商户号
     merchantId: 1631833859
-    #商户API私钥路径
-    privateKeyPath: D:\work\daijia_work\daijia_new\daijia-parent\service\service-payment\src\main\resources\\apiclient_key.pem
+    #商户API私钥路径（classpath: 前缀表示读取工程内 service-payment/src/main/resources 下的证书，
+    #不要写成某台机器上的绝对路径，否则换机器或打成 jar 部署时服务无法启动）
+    privateKeyPath: classpath:apiclient_key.pem
     #商户证书序列号
     merchantSerialNumber: 4AE80B52EBEAB2B96F68E02510A42801E952E889
     #商户APIV3密钥
