@@ -43,6 +43,21 @@ public class OrderController {
         return Result.ok(orderService.searchCustomerCurrentOrder(AuthContextHolder.getUserId()));
     }
 
+    /**
+     * 乘客取消订单
+     *
+     * <p>等待接单 / 已接单 / 司机已到达 三种状态可取消；开始代驾之后请走客服或事故关闭。</p>
+     *
+     * @param orderId 订单id
+     * @return true
+     */
+    @Operation(summary = "乘客取消订单")
+    @Login
+    @PostMapping("/cancelOrder/{orderId}")
+    public Result<Boolean> cancelOrder(@PathVariable Long orderId) {
+        return Result.ok(orderService.cancelOrder(orderId, AuthContextHolder.getUserId()));
+    }
+
 
     @Operation(summary = "预估订单数据")
     @Login

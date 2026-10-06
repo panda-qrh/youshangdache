@@ -311,12 +311,12 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         DriverAuthInfoVo driverAuthInfoVo = new DriverAuthInfoVo();
         BeanUtils.copyProperties(driverInfo, driverAuthInfoVo);
 
-        driverAuthInfoVo.setIdcardBackShowUrl(cosService.getImageUrl(driverAuthInfoVo.getIdcardBackUrl()));
-        driverAuthInfoVo.setIdcardFrontShowUrl(cosService.getImageUrl(driverAuthInfoVo.getIdcardFrontUrl()));
-        driverAuthInfoVo.setIdcardHandShowUrl(cosService.getImageUrl(driverAuthInfoVo.getIdcardHandUrl()));
-        driverAuthInfoVo.setDriverLicenseFrontShowUrl(cosService.getImageUrl(driverAuthInfoVo.getDriverLicenseFrontUrl()));
-        driverAuthInfoVo.setDriverLicenseBackShowUrl(cosService.getImageUrl(driverAuthInfoVo.getDriverLicenseBackUrl()));
-        driverAuthInfoVo.setDriverLicenseHandShowUrl(cosService.getImageUrl(driverAuthInfoVo.getDriverLicenseHandUrl()));
+        driverAuthInfoVo.setIdcardBackShowUrl(cosService.getImageUrl(driverInfo.getIdcardBackUrl()));
+        driverAuthInfoVo.setIdcardFrontShowUrl(cosService.getImageUrl(driverInfo.getIdcardFrontUrl()));
+        driverAuthInfoVo.setIdcardHandShowUrl(cosService.getImageUrl(driverInfo.getIdcardHandUrl()));
+        driverAuthInfoVo.setDriverLicenseFrontShowUrl(cosService.getImageUrl(driverInfo.getDriverLicenseFrontUrl()));
+        driverAuthInfoVo.setDriverLicenseBackShowUrl(cosService.getImageUrl(driverInfo.getDriverLicenseBackUrl()));
+        driverAuthInfoVo.setDriverLicenseHandShowUrl(cosService.getImageUrl(driverInfo.getDriverLicenseHandUrl()));
 
         return driverAuthInfoVo;
     }
@@ -351,9 +351,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         String failMsg = null;
         try {
             //根据code+小程序id+秘钥请求微信接口，返回openid
-            openId = wxMaService.getUserService()
-                    .getSessionInfo(code)
-                    .getOpenid();
+            openId = wxMaService.getUserService().getSessionInfo(code).getOpenid();
         } catch (WxErrorException e) {
             log.warn("微信登录失败，code: {}", code, e);
             failMsg = "微信授权失败";
@@ -435,7 +433,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
 
     private Boolean detectLiveFace(String img) {
         try {
-            Credential cred = new Credential(tencentCloudProperties.getSecretId(),tencentCloudProperties.getSecretKey());
+            Credential cred = new Credential(tencentCloudProperties.getSecretId(), tencentCloudProperties.getSecretKey());
             HttpProfile httpProfile = new HttpProfile();
             httpProfile.setEndpoint("iai.tencentcloudapi.com");
             ClientProfile clientProfile = new ClientProfile();
@@ -450,7 +448,7 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
                 return true;
             }
         } catch (TencentCloudSDKException e) {
-           log.error("e ",e);
+            log.error("e ", e);
         }
         return false;
     }

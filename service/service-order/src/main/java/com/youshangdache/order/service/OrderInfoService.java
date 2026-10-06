@@ -179,5 +179,39 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     void updateProfitsharingStatus(String orderNo);
 
+    /**
+     * 乘客取消订单（等待接单 / 已接单 / 司机已到达 三种状态可取消）
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    Boolean cancelOrderByCustomer(Long orderId, Long customerId);
+
+    /**
+     * 司机撤单（已接单 / 司机已到达 两种状态可撤单）
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    Boolean cancelOrderByDriver(Long orderId, Long driverId);
+
+    /**
+     * 事故关闭订单（后台介入，开始代驾之后可用）
+     *
+     * @param orderId 订单id
+     * @param remark  关闭原因
+     * @return true
+     */
+    Boolean closeOrderByCaseAccident(Long orderId, String remark);
+
+    /**
+     * 当前状态下允许执行的事件（给前端下发可用操作，避免前端硬编码状态判断）
+     *
+     * @param orderId 订单id
+     * @return 事件列表
+     */
+    java.util.List<com.youshangdache.model.enums.OrderEventEnum> availableEvents(Long orderId);
 
 }

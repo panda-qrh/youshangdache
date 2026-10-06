@@ -67,6 +67,10 @@ public enum ResultCodeEnum {
     ORDER_SNAP_UP_FAILED(40001, "抢单失败"),
     ORDER_NOT_EXIST(40002, "订单不存在"),
     EXIST_UNPAID_ORDER(40003, "存在未支付订单"),
+    /** 事件与当前订单状态不匹配，状态机拒绝该迁移 */
+    ORDER_STATUS_ILLEGAL_TRANSITION(40004, "当前订单状态不允许该操作"),
+    /** 通过 CAS 更新时受影响行数为 0，说明状态已被其它请求改变 */
+    ORDER_CONCURRENT_MODIFY(40005, "订单状态已变更，请刷新后重试"),
 
     // ==================== 50000-50999 优惠券模块 ====================
     COUPON_EXPIRED(50001, "优惠券已过期"),

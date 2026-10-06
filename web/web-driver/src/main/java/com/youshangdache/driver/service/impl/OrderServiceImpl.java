@@ -85,6 +85,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
+     * 司机撤单
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    @Override
+    public Boolean cancelOrder(Long orderId, Long driverId) {
+        return orderInfoFeignClient.cancelOrderByDriver(orderId, driverId);
+    }
+
+    /**
      * 获取司机订单分页列表
      *
      * @param pageParam 分页参数
@@ -144,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
             //等候时长 = 司机到达上车点 到 开始代驾 之间的时间差（乘客让司机等的时长），
             //不能用"接单到到达"的耗时，那是司机的赶路时间，不是等候费。
             Integer waitMinute = getWaitMinute(orderInfo);
-            FeeRuleRequestForm feeRuleRequestForm=FeeRuleRequestForm.builder()
+            FeeRuleRequestForm feeRuleRequestForm = FeeRuleRequestForm.builder()
                     .distance(realDistance)
                     .startTime(orderInfo.getStartServiceTime())
                     .waitMinute(waitMinute)
@@ -200,25 +212,26 @@ public class OrderServiceImpl implements OrderService {
         ).get(10, TimeUnit.SECONDS);
 
         //获取执行结果
-        BigDecimal realDistance = realDistanceCF.get();
-        FeeRuleResponseVo feeRuleResponseVo = feeRuleResponseVoCF.get();
-        RewardRuleResponseVo rewardRuleResponseVo = rewardRuleResponseVoCF.get();
-        ProfitsharingRuleResponseVo profitsharingRuleResponseVo = profitsharingRuleResponseVoCF.get();
+        BigDecimal realDistance = realDistanceCF.get(10, TimeUnit.SECONDS);
+        FeeRuleResponseVo feeRuleResponseVo = feeRuleResponseVoCF.get(10, TimeUnit.SECONDS);
+        RewardRuleResponseVo rewardRuleResponseVo = rewardRuleResponseVoCF.get(10, TimeUnit.SECONDS);
+        ProfitsharingRuleResponseVo profitsharingRuleResponseVo = profitsharingRuleResponseVoCF.get(10, TimeUnit.SECONDS);
 
         //7.封装更新订单账单相关实体对象
-        UpdateOrderBillForm updateOrderBillForm = new UpdateOrderBillForm();
-        updateOrderBillForm.setOrderId(orderFeeForm.getOrderId());
-        updateOrderBillForm.setDriverId(orderFeeForm.getDriverId());
-        updateOrderBillForm.setTollFee(orderFeeForm.getTollFee());
-        updateOrderBillForm.setParkingFee(orderFeeForm.getParkingFee());
-        updateOrderBillForm.setOtherFee(orderFeeForm.getOtherFee());
-        updateOrderBillForm.setFavourFee(orderInfo.getFavourFee());
-        updateOrderBillForm.setRealDistance(realDistance);
+        UpdateOrderBillForm updateOrderBillForm = UpdateOrderBillForm.builder()
+                .orderId(orderFeeForm.getOrderId())
+                .driverId(orderFeeForm.getDriverId())
+                .tollFee(orderFeeForm.getTollFee())
+                .parkingFee(orderFeeForm.getParkingFee())
+                .otherFee(orderFeeForm.getOtherFee())
+                .favourFee(orderInfo.getFavourFee())
+                .realDistance(realDistance)
+                .profitsharingRuleId(profitsharingRuleResponseVo.getProfitsharingRuleId())
+                .build();
 
         BeanUtils.copyProperties(rewardRuleResponseVo, updateOrderBillForm);
         BeanUtils.copyProperties(feeRuleResponseVo, updateOrderBillForm);
         BeanUtils.copyProperties(profitsharingRuleResponseVo, updateOrderBillForm);
-        updateOrderBillForm.setProfitsharingRuleId(profitsharingRuleResponseVo.getProfitsharingRuleId());
 
         //8.结束代驾更新账单
         orderInfoFeignClient.endDrive(updateOrderBillForm);
@@ -299,7 +312,7 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderBillVo orderBillVo = null;
         OrderProfitsharingVo orderProfitsharingVo = null;
-        if (orderInfo.getStatus().compareTo(OrderStatusEnum.END_SERVICE)>=0) {
+        if (orderInfo.getStatus().compareTo(OrderStatusEnum.END_SERVICE) >= 0) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId);
             orderProfitsharingVo = orderInfoFeignClient.getOrderProfitsharing(orderId);
         }

@@ -1,6 +1,5 @@
 package com.youshangdache.rules.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
@@ -8,46 +7,59 @@ import org.kie.api.builder.KieModule;
 import org.kie.api.builder.Message;
 import org.kie.api.runtime.KieContainer;
 import org.kie.internal.io.ResourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Slf4j
 @Configuration
 public class DroolsConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(DroolsConfig.class);
     private static final String RULES_PATH = "classpath*:rules/*.drl";
 
+    /**
+     * 为每个 .drl 文件创建独立的 KieContainer。
+     * 返回的 Map 以文件名（不含路径）为 key，调用方通过 RuleType.drlFile() 取值。
+     */
     @Bean
-    public KieContainer kieContainer() {
+    public Map<String, KieContainer> kieContainerMap() {
         KieServices kieServices = KieServices.Factory.get();
-        KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
+        Resource[] resources;
         try {
-            Resource[] resources = resolver.getResources(RULES_PATH);
-            for (Resource resource : resources) {
-                //这里必须用 classpath 相对路径（rules/xxx.drl）注册资源。
-                //原来传的是 resource.getURL().getPath()，那是绝对文件路径（打成 jar 后还会变成 jar:file:...），
-                //ClassPathResource 定位不到，会抛 FileNotFoundException 导致规则加载失败。
-                kieFileSystem.write(ResourceFactory.newClassPathResource("rules/" + resource.getFilename()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load Drools rule files from: " + RULES_PATH, e);
+            resources = new PathMatchingResourcePatternResolver().getResources(RULES_PATH);
+        } catch (Exception e) {
+            throw new RuntimeException("无法扫描 Drools 规则文件: " + RULES_PATH, e);
         }
 
-        KieBuilder kieBuilder = kieServices.newKieBuilder(kieFileSystem).buildAll();
-        if (kieBuilder.getResults().hasMessages(Message.Level.ERROR)) {
-            throw new RuntimeException("Drools build errors:\n" + kieBuilder.getResults().toString());
-        }
+        Map<String, KieContainer> map = Stream.of(resources)
+                .collect(Collectors.toMap(
+                        Resource::getFilename,
+                        r -> {
+                            KieFileSystem fs = kieServices.newKieFileSystem();
+                            fs.write(ResourceFactory.newClassPathResource("rules/" + r.getFilename()));
+                            KieBuilder builder = kieServices.newKieBuilder(fs).buildAll();
+                            if (builder.getResults().hasMessages(Message.Level.ERROR)) {
+                                throw new RuntimeException("Drools 编译错误 [" + r.getFilename() + "]: " + builder.getResults());
+                            }
+                            KieModule module = builder.getKieModule();
+                            KieContainer container = kieServices.newKieContainer(module.getReleaseId());
+                            log.info("Drools KieContainer 加载完成: {} (releaseId={})", r.getFilename(), module.getReleaseId());
+                            return container;
+                        }
+                ));
 
-        KieModule kieModule = kieBuilder.getKieModule();
-        KieContainer kieContainer = kieServices.newKieContainer(kieModule.getReleaseId());
-        log.info("Drools KieContainer initialized successfully");
-        return kieContainer;
+        if (map.isEmpty()) {
+            throw new RuntimeException("未找到任何 Drools 规则文件，路径: " + RULES_PATH);
+        }
+        return map;
     }
 }

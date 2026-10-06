@@ -151,6 +151,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
+     * 乘客取消订单
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    @Override
+    public Boolean cancelOrder(Long orderId, Long customerId) {
+        return orderInfoFeignClient.cancelOrderByCustomer(orderId, customerId);
+    }
+
+    /**
      * 计算最佳驾驶路线
      *
      * @param calculateDrivingLineForm
@@ -302,7 +314,6 @@ public class OrderServiceImpl implements OrderService {
         NewOrderTaskVo newOrderTaskVo = NewOrderTaskVo.builder()
                 .orderId(orderId)
                 .startLocation(orderInfoForm.getStartLocation())
-                //注意：派单是按"代驾起点"搜索附近司机的，这里必须用起点经纬度
                 .startPointLongitude(orderInfoForm.getStartPointLongitude())
                 .startPointLatitude(orderInfoForm.getStartPointLatitude())
                 .endLocation(orderInfoForm.getEndLocation())

@@ -25,21 +25,21 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class NewOrderServiceImpl implements NewOrderService {
-    @Autowired
+    @Resource
     private XxlJobClient xxlJobClient;
-    @Autowired
+    @Resource
     private OrderJobMapper orderJobMapper;
-    @Autowired
+    @Resource
     private LocationFeignClient locationFeignClient;
-    @Autowired
+    @Resource
     private OrderInfoFeignClient orderInfoFeignClient;
-    @Autowired
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private TransactionTemplate transactionTemplate;
@@ -61,6 +61,7 @@ public class NewOrderServiceImpl implements NewOrderService {
 
     /**
      * 查询司机的最新订单数据
+     *
      * @param driverId 司机id
      * @return
      */
@@ -68,7 +69,7 @@ public class NewOrderServiceImpl implements NewOrderService {
     public List<NewOrderDataVo> findNewOrderQueueData(Long driverId) {
         List<NewOrderDataVo> list = new ArrayList<>();
         String key = RedisConstant.DRIVER_ORDER_TEMP_LIST + driverId;
-        if (stringRedisTemplate.opsForList().size(key) > 0) {
+        if (Objects.requireNonNull(stringRedisTemplate.opsForList().size(key)) > 0) {
             String content = stringRedisTemplate.opsForList().leftPop(key);
             NewOrderDataVo newOrderDataVo = JSONObject.parseObject(content, NewOrderDataVo.class);
             list.add(newOrderDataVo);

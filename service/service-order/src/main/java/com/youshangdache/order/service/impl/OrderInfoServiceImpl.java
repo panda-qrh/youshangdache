@@ -12,6 +12,8 @@ import com.youshangdache.common.execption.GuiguException;
 import com.youshangdache.common.result.ResultCodeEnum;
 import com.youshangdache.common.mq.service.RabbitService;
 import com.youshangdache.model.entity.order.*;
+import com.youshangdache.model.enums.OrderEventEnum;
+import com.youshangdache.model.enums.OrderOperatorEnum;
 import com.youshangdache.model.enums.OrderStatusEnum;
 import com.youshangdache.model.enums.ProfitsharingStatusEnum;
 import com.youshangdache.model.form.order.OrderInfoForm;
@@ -26,6 +28,7 @@ import com.youshangdache.order.mapper.OrderProfitsharingMapper;
 import com.youshangdache.order.mapper.OrderStatusLogMapper;
 import com.youshangdache.order.service.OrderInfoService;
 import com.youshangdache.order.service.OrderMonitorService;
+import com.youshangdache.order.statemachine.OrderStateMachineService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +42,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -65,9 +70,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderProfitsharingMapper orderProfitsharingMapper;
     @Resource
     private RabbitService rabbitService;
+    /**
+     * 订单状态机统一入口：order_info.status 的唯一写入口
+     */
+    @Resource
+    private OrderStateMachineService orderStateMachineService;
 
     /**
      * 修改分账信息的状态
+     *
+     * <p>分账成功意味着这一单的钱已经结算完，此时把订单推进到终态"订单已结束"
+     * （原来支付完成后订单永远停在"已付款"，ORDER_FINISHED 是个死状态）。</p>
      *
      * @param orderNo 订单编号
      */
@@ -75,14 +88,30 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public void updateProfitsharingStatus(String orderNo) {
         OrderInfo orderInfo = orderInfoMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo, orderNo).select(OrderInfo::getId));
+        if (orderInfo == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
         OrderProfitsharing updateOrderProfitsharing = new OrderProfitsharing();
         updateOrderProfitsharing.setStatus(ProfitsharingStatusEnum.SHARED);
         orderProfitsharingMapper.update(updateOrderProfitsharing, new LambdaQueryWrapper<OrderProfitsharing>()
                 .eq(OrderProfitsharing::getOrderId, orderInfo.getId()));
+
+        // 分账完成 -> 订单结束（幂等：既不是"已付款"也不是重复消息时，状态机会拒绝并在这里被忽略）
+        try {
+            orderStateMachineService.fireEvent(orderInfo.getId(), OrderEventEnum.FINISH_ORDER,
+                    OrderOperatorEnum.SYSTEM, null, "分账完成，订单结束");
+        } catch (GuiguException e) {
+            if (e.getCode() == ResultCodeEnum.ORDER_STATUS_ILLEGAL_TRANSITION.getCode()
+                    || e.getCode() == ResultCodeEnum.ORDER_CONCURRENT_MODIFY.getCode()) {
+                log.info("订单 {} 当前状态无需推进到已结束，忽略本次 FINISH_ORDER", orderNo);
+            } else {
+                throw e;
+            }
+        }
     }
 
     /**
-     * 系统取消订单
+     * 系统取消订单（超时无人接单）
      *
      * @param orderId 订单id
      */
@@ -90,22 +119,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = {Exception.class})
     public void systemCancelOrder(Long orderId) {
         OrderStatusEnum orderStatus = this.getOrderStatus(orderId);
-        if (orderStatus == OrderStatusEnum.WAITING_ACCEPT) {
-            //取消订单：带上 status = 等待接单 的条件，避免把已经被司机接走的订单又取消掉
-            OrderInfo orderInfo = new OrderInfo();
-            orderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER);
-            int row = orderInfoMapper.update(orderInfo, new LambdaQueryWrapper<OrderInfo>()
-                    .eq(OrderInfo::getId, orderId)
-                    .eq(OrderInfo::getStatus, OrderStatusEnum.WAITING_ACCEPT));
-            if (row == 1) {
-                //记录日志
-                this.log(orderId, OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER);
-                //删除redis接单标识（key 里必须带上 orderId，否则删的是一个不存在的 key）
-                stringRedisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK + orderId);
-            } else {
-                throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
-            }
+        if (orderStatus != OrderStatusEnum.WAITING_ACCEPT) {
+            //已经不在等待接单了（可能刚被抢单），直接跳过，属于正常竞态
+            log.info("订单 {} 当前状态为 {}，跳过超时取消", orderId, orderStatus);
+            return;
         }
+        try {
+            orderStateMachineService.fireEvent(orderId, OrderEventEnum.CANCEL_TIMEOUT,
+                    OrderOperatorEnum.SYSTEM, null, "超过15分钟无人接单，系统自动取消");
+        } catch (GuiguException e) {
+            //与"司机抢单"竞争失败：状态已被改成已接单，本次取消失败是正常结果
+            if (e.getCode() == ResultCodeEnum.ORDER_CONCURRENT_MODIFY.getCode()
+                    || e.getCode() == ResultCodeEnum.ORDER_STATUS_ILLEGAL_TRANSITION.getCode()) {
+                log.info("订单 {} 已被接单，超时取消不再生效", orderId);
+                return;
+            }
+            throw e;
+        }
+        //删除redis接单标识（key 里必须带上 orderId，否则删的是一个不存在的 key）
+        stringRedisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK + orderId);
     }
 
     @Override
@@ -114,20 +146,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return true;
     }
 
+    /**
+     * 超时取消订单（Redisson 延迟队列入口）
+     *
+     * <p>与 {@link #systemCancelOrder(Long)} 是同一条业务的两个触发通道（MQ 延迟消息 / Redisson 延迟队列），
+     * 这里直接复用同一套逻辑，避免两处实现逐渐不一致。</p>
+     */
     @Override
     public void orderCancel(Long orderId) {
-        OrderInfo orderInfo = orderInfoMapper.selectById(orderId);
-        if (orderInfo != null && orderInfo.getStatus() == OrderStatusEnum.WAITING_ACCEPT) {
-            OrderInfo updateOrderInfo = new OrderInfo();
-            updateOrderInfo.setStatus(OrderStatusEnum.ORDER_CANCELED_WITH_NO_DRIVER_ACCEPT_ORDER);
-            int i = orderInfoMapper.update(updateOrderInfo, new LambdaQueryWrapper<OrderInfo>()
-                    .eq(OrderInfo::getId, orderId)
-                    .eq(OrderInfo::getStatus, OrderStatusEnum.WAITING_ACCEPT));
-            if (i > 0) {
-                //删除接单标识（同样必须带上 orderId）
-                stringRedisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK + orderId);
-            }
-        }
+        this.systemCancelOrder(orderId);
     }
 
     @Override
@@ -152,6 +179,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return true
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class})
     public Boolean updateOrderPayStatus(String orderNo) {
         OrderInfo orderInfo = orderInfoMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo, orderNo));
 
@@ -162,18 +190,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         if (orderInfo.getStatus() == OrderStatusEnum.ORDER_PAID) {
             return true;
         }
-        //只有"未付款"状态的订单才能被置为已付款，避免被取消或未结束的订单被改成已支付
-        OrderInfo orderInfo1 = new OrderInfo();
-        orderInfo1.setStatus(OrderStatusEnum.ORDER_PAID);
-        orderInfo1.setPayTime(new Date());
-        int update = orderInfoMapper.update(orderInfo1, new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getOrderNo, orderNo)
-                .eq(OrderInfo::getStatus, OrderStatusEnum.ORDER_UNPAID));
-        if (update > 0) {
-            return true;
-        } else {
-            throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
-        }
+        //只有"未付款"状态的订单才能置为已付款：交给状态机判断，非法状态会被拒绝
+        OrderInfo patch = new OrderInfo();
+        patch.setId(orderInfo.getId());
+        patch.setPayTime(new Date());
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.PAY_SUCCESS,
+                OrderOperatorEnum.SYSTEM,
+                null,
+                "微信支付成功回调");
+        return true;
     }
 
     /**
@@ -205,21 +232,26 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return true
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class})
     public Boolean sendOrderBillInfo(Long orderId, Long driverId) {
-        //账单只能在"结束代驾"之后发送，带上 status 条件避免把已支付/已取消的订单打回未付款
-        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, orderId)
-                .eq(OrderInfo::getDriverId, driverId)
-                .eq(OrderInfo::getStatus, OrderStatusEnum.END_SERVICE);
-        OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.ORDER_UNPAID);
-        int rows = orderInfoMapper.update(orderInfo, wrapper);
-        if (rows > 0) {
-            return true;
-        } else {
-            throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
+        //先做归属校验给出明确错误；SQL 里的 driverId 条件作为并发下的原子兜底
+        OrderInfo current = orderInfoMapper.selectById(orderId);
+        if (current == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
         }
-
+        if (!driverId.equals(current.getDriverId())) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+        OrderInfo patch = new OrderInfo();
+        patch.setId(orderId);
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.SEND_BILL,
+                OrderOperatorEnum.DRIVER,
+                driverId,
+                "司机确认账单并发送给乘客",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, driverId));
+        return true;
     }
 
     /**
@@ -287,23 +319,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean endDrive(UpdateOrderBillForm form) {
-        //结束代驾只能从"开始代驾"流转过来；带上 status 条件同时也保证重复调用不会重复生成账单
-        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, form.getOrderId())
-                .eq(OrderInfo::getDriverId, form.getDriverId())
-                .eq(OrderInfo::getStatus, OrderStatusEnum.START_SERVICE);
-
-        OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.END_SERVICE);
-        orderInfo.setRealAmount(form.getTotalAmount());
-        orderInfo.setFavourFee(form.getFavourFee());
-        orderInfo.setRealDistance(form.getRealDistance());
-        orderInfo.setEndServiceTime(new Date());
-
-        int rows = orderInfoMapper.update(orderInfo, wrapper);
-        if (rows == 0) {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
-        }
+        OrderInfo patch = new OrderInfo();
+        patch.setId(form.getOrderId());
+        patch.setRealAmount(form.getTotalAmount());
+        patch.setFavourFee(form.getFavourFee());
+        patch.setRealDistance(form.getRealDistance());
+        patch.setEndServiceTime(new Date());
+        //状态机校验"开始代驾 -> 结束代驾"；CAS 同时保证重复调用不会重复生成账单
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.END_DRIVE,
+                OrderOperatorEnum.DRIVER,
+                form.getDriverId(),
+                "司机结束代驾",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, form.getDriverId()));
 
         OrderBill orderBill = new OrderBill();
         BeanUtils.copyProperties(form, orderBill);
@@ -347,23 +376,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Boolean startDrive(StartDriveForm startDriveForm) {
-        //开始代驾允许从"司机已到达"或"已更新车辆信息"流转过来
-        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, startDriveForm.getOrderId())
-                .eq(OrderInfo::getDriverId, startDriveForm.getDriverId())
-                .in(OrderInfo::getStatus, OrderStatusEnum.DRIVER_ARRIVED, OrderStatusEnum.UPDATE_CAR_INFO);
-
-        OrderInfo updateOrderInfo = new OrderInfo();
-        updateOrderInfo.setStatus(OrderStatusEnum.START_SERVICE);
-        updateOrderInfo.setStartServiceTime(new Date());
+        //开始代驾允许从"司机已到达"或"已更新车辆信息"流转过来，合法性由状态机判断
+        OrderInfo patch = new OrderInfo();
+        patch.setId(startDriveForm.getOrderId());
+        patch.setStartServiceTime(new Date());
         //只能更新自己的订单
-        int row = orderInfoMapper.update(updateOrderInfo, queryWrapper);
-        if (row >= 1) {
-            //记录日志
-            this.log(startDriveForm.getOrderId(), OrderStatusEnum.START_SERVICE);
-        } else {
-            throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
-        }
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.START_DRIVE,
+                OrderOperatorEnum.DRIVER,
+                startDriveForm.getDriverId(),
+                "司机开始代驾",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, startDriveForm.getDriverId()));
 
         //初始化订单监控统计数据
         OrderMonitor orderMonitor = new OrderMonitor();
@@ -385,20 +409,21 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateOrderCart(UpdateOrderCartForm updateOrderCartForm) {
-        //录入代驾车辆信息只允许在"司机已到达"之后进行
-        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, updateOrderCartForm.getOrderId())
-                .eq(OrderInfo::getDriverId, updateOrderCartForm.getDriverId())
-                .eq(OrderInfo::getStatus, OrderStatusEnum.DRIVER_ARRIVED);
-        OrderInfo orderInfo = new OrderInfo();
-        BeanUtils.copyProperties(updateOrderCartForm, orderInfo);
-        orderInfo.setStatus(OrderStatusEnum.UPDATE_CAR_INFO);
-        int rows = orderInfoMapper.update(orderInfo, queryWrapper);
-        if (rows > 0) {
-            return true;
-        } else {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
-        }
+        OrderInfo patch = new OrderInfo();
+        patch.setId(updateOrderCartForm.getOrderId());
+        patch.setCarLicense(updateOrderCartForm.getCarLicense());
+        patch.setCarType(updateOrderCartForm.getCarType());
+        patch.setCarFrontUrl(updateOrderCartForm.getCarFrontUrl());
+        patch.setCarBackUrl(updateOrderCartForm.getCarBackUrl());
+        //合法性：只允许"司机已到达 -> 更新代驾车辆信息"
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.UPDATE_CAR,
+                OrderOperatorEnum.DRIVER,
+                updateOrderCartForm.getDriverId(),
+                "司机录入代驾车辆信息",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, updateOrderCartForm.getDriverId()));
+        return true;
     }
 
     /**
@@ -409,22 +434,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean driverArriveStartLocation(Long orderId, Long driverId) {
-        //更新订单状态，到达时间；只允许"已接单"的订单流转为"司机已到达"
-        LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<OrderInfo>()
-                .eq(OrderInfo::getId, orderId)
-                .eq(OrderInfo::getDriverId, driverId)
-                .eq(OrderInfo::getStatus, OrderStatusEnum.ACCEPTED);
-        OrderInfo orderInfo = new OrderInfo();
-        orderInfo.setStatus(OrderStatusEnum.DRIVER_ARRIVED);
-        orderInfo.setArriveTime(new Date());
-
-        int rows = orderInfoMapper.update(orderInfo, queryWrapper);
-        if (rows > 0) {
-            return true;
-        } else {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
-        }
+        OrderInfo patch = new OrderInfo();
+        patch.setId(orderId);
+        patch.setArriveTime(new Date());
+        //合法性：只允许"已接单 -> 司机已到达"
+        orderStateMachineService.fireEvent(
+                patch,
+                OrderEventEnum.DRIVER_ARRIVE,
+                OrderOperatorEnum.DRIVER,
+                driverId,
+                "司机到达上车点",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, driverId));
+        return true;
     }
 
     /**
@@ -532,19 +555,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (!stringRedisTemplate.hasKey(acceptMarkKey)) {
                 throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
             }
-            //更新时带上 status = 等待接单 的条件，用受影响行数判断是否抢单成功，
-            //这是锁之外的最后一道防线，即使锁失效也不会出现重复接单
-            OrderInfo updateOrderInfo = new OrderInfo();
-            updateOrderInfo.setStatus(OrderStatusEnum.ACCEPTED);
-            updateOrderInfo.setDriverId(driverId);
-            updateOrderInfo.setAcceptTime(new Date());
-            int row = orderInfoMapper.update(updateOrderInfo, new LambdaQueryWrapper<OrderInfo>()
-                    .eq(OrderInfo::getId, orderId)
-                    .eq(OrderInfo::getStatus, OrderStatusEnum.WAITING_ACCEPT));
-            if (row < 1) {
-                //抢单失败：订单已经被其他司机接走
-                throw new GuiguException(ResultCodeEnum.ORDER_SNAP_UP_FAILED);
+
+            //状态机判定"等待接单 + 抢单 -> 已接单"，CAS 作为锁之外的最后一道防线
+            OrderInfo patch = new OrderInfo();
+            patch.setOrderNo(orderId.toString());
+            patch.setDriverId(driverId);
+            patch.setAcceptTime(new Date());
+            try {
+                orderStateMachineService.fireEvent(patch, OrderEventEnum.DRIVER_ACCEPT,OrderOperatorEnum.DRIVER, driverId, "司机抢单");
+            } catch (GuiguException e) {
+                //非法迁移或并发冲突，对抢单来说都统一表达为"抢单失败"
+                if (e.getCode() == ResultCodeEnum.ORDER_CONCURRENT_MODIFY.getCode()
+                        || e.getCode() == ResultCodeEnum.ORDER_STATUS_ILLEGAL_TRANSITION.getCode()) {
+                    throw new GuiguException(ResultCodeEnum.ORDER_SNAP_UP_FAILED);
+                }
+                throw e;
             }
+
             //司机抢单成功，说明用户的订单已被司机接单，那就不需要再等待接单了，删除redis中的接单标识
             stringRedisTemplate.delete(acceptMarkKey);
             return true;
@@ -592,7 +619,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setOrderNo(orderNo);
         orderInfoMapper.insert(orderInfo);
         //记录日志
-        this.log(orderInfo.getId(), orderInfo.getStatus());
+        this.log(orderInfo.getOrderNo(), orderInfo.getStatus());
 
         //延迟取消订单、接单标识都属于"消息/缓存"动作，一旦 DB 事务回滚它们无法撤回，
         //因此统一放到事务提交之后再执行，避免出现"订单不存在但取消消息还在飞"的不一致。
@@ -679,16 +706,116 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     /**
-     * 记录乘客下单的日志
+     * 记录乘客下单的状态日志
+     *
+     * <p>下单是把订单"创建"为等待接单，属于初始状态落库而不是状态迁移，
+     * 所以不经过状态机，但仍要留下一条审计记录（fromStatus 为空表示这是订单的起点）。</p>
      *
      * @param orderId 订单id
      * @param status  订单状态
      */
-    private void log(Long orderId, OrderStatusEnum status) {
+    private void log(String orderId, OrderStatusEnum status) {
         OrderStatusLog orderStatusLog = new OrderStatusLog();
         orderStatusLog.setOrderId(orderId);
+        orderStatusLog.setFromStatus(null);
         orderStatusLog.setOrderStatus(status);
+        orderStatusLog.setOperatorType(OrderOperatorEnum.CUSTOMER);
+        orderStatusLog.setRemark("乘客下单");
         orderStatusLog.setOperateTime(new Date());
         orderStatusLogMapper.insert(orderStatusLog);
+    }
+
+    /**
+     * 乘客取消订单
+     *
+     * <p>上车前（等待接单/已接单/司机已到达）允许乘客自助取消；
+     * 开始代驾之后不再允许，需要走后台的事故关闭。</p>
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public Boolean cancelOrderByCustomer(Long orderId, Long customerId) {
+        OrderInfo current = orderInfoMapper.selectById(orderId);
+        if (current == null) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+        //归属校验：只能取消自己的订单
+        if (!customerId.equals(current.getCustomerId())) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+        orderStateMachineService.fireEvent(
+                orderId,
+                OrderEventEnum.CANCEL_BY_CUSTOMER,
+                OrderOperatorEnum.CUSTOMER,
+                customerId,
+                "乘客主动取消订单",
+                wrapper -> wrapper.eq(OrderInfo::getCustomerId, customerId)
+        );
+        //取消成功后清掉接单标识，避免延误的派单消息继续把这个订单推给司机
+        stringRedisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK + orderId);
+        return true;
+    }
+
+    /**
+     * 司机撤单
+     *
+     * <p>只能在接到单之后、开始代驾之前撤单。</p>
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public Boolean cancelOrderByDriver(Long orderId, Long driverId) {
+        OrderInfo current = orderInfoMapper.selectById(orderId);
+        if (current == null || !driverId.equals(current.getDriverId())) {
+            throw new GuiguException(ResultCodeEnum.ORDER_NOT_EXIST);
+        }
+
+        orderStateMachineService.fireEvent(
+                orderId,
+                OrderEventEnum.CANCEL_BY_DRIVER,
+                OrderOperatorEnum.DRIVER,
+                driverId,
+                "司机主动撤单",
+                wrapper -> wrapper.eq(OrderInfo::getDriverId, driverId)
+        );
+        return true;
+    }
+
+    /**
+     * 事故关闭订单（后台介入）
+     *
+     * <p>代驾过程中发生事故时由后台关闭订单，需要留下原因。</p>
+     *
+     * @param orderId 订单id
+     * @param remark  关闭原因
+     * @return true
+     */
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public Boolean closeOrderByCaseAccident(Long orderId, String remark) {
+        orderStateMachineService.fireEvent(
+                orderId,
+                OrderEventEnum.CLOSE_BY_CASE_ACCIDENT,
+                OrderOperatorEnum.ADMIN,
+                null,
+                StringUtils.hasText(remark) ? remark : "代驾过程中发生事故，后台关闭订单");
+        return true;
+    }
+
+    /**
+     * 当前状态下允许执行的事件
+     *
+     * @param orderId 订单id
+     * @return 事件列表
+     */
+    @Override
+    public List<OrderEventEnum> availableEvents(Long orderId) {
+        return orderStateMachineService.availableEvents(orderId);
     }
 }

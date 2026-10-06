@@ -81,6 +81,17 @@ public interface OrderService {
      * @return 当前订单信息
      */
     CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
+
+    /**
+     * 乘客取消订单
+     *
+     * <p>等待接单 / 已接单 / 司机已到达 三种状态可以取消，开始代驾之后不允许自助取消。</p>
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    Boolean cancelOrder(Long orderId, Long customerId);
     /**
      * 获取乘客订单分页列表
      *

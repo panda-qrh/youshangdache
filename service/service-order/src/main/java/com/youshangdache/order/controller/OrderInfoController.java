@@ -1,6 +1,7 @@
 package com.youshangdache.order.controller;
 
 import com.youshangdache.model.entity.order.OrderInfo;
+import com.youshangdache.model.enums.OrderEventEnum;
 import com.youshangdache.model.enums.OrderStatusEnum;
 import com.youshangdache.model.form.order.OrderInfoForm;
 import com.youshangdache.model.form.order.StartDriveForm;
@@ -16,6 +17,7 @@ import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 @Tag(name = "订单API接口管理")
@@ -289,6 +291,59 @@ public class OrderInfoController {
     @GetMapping("/updateCouponAmount/{orderId}/{couponAmount}")
     public Boolean updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount) {
         return orderInfoService.updateCouponAmount(orderId, couponAmount);
+    }
+
+    /**
+     * 乘客取消订单
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    @Operation(summary = "乘客取消订单")
+    @PostMapping("/cancelOrderByCustomer/{orderId}/{customerId}")
+    public Boolean cancelOrderByCustomer(@PathVariable Long orderId, @PathVariable Long customerId) {
+        return orderInfoService.cancelOrderByCustomer(orderId, customerId);
+    }
+
+    /**
+     * 司机撤单
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    @Operation(summary = "司机撤单")
+    @PostMapping("/cancelOrderByDriver/{orderId}/{driverId}")
+    public Boolean cancelOrderByDriver(@PathVariable Long orderId, @PathVariable Long driverId) {
+        return orderInfoService.cancelOrderByDriver(orderId, driverId);
+    }
+
+    /**
+     * 事故关闭订单（后台）
+     *
+     * @param orderId 订单id
+     * @param remark  关闭原因
+     * @return true
+     */
+    @Operation(summary = "事故关闭订单")
+    @PostMapping("/closeOrderByCaseAccident/{orderId}")
+    public Boolean closeOrderByCaseAccident(@PathVariable Long orderId, @RequestParam(required = false) String remark) {
+        return orderInfoService.closeOrderByCaseAccident(orderId, remark);
+    }
+
+    /**
+     * 查询当前订单状态下可执行的操作
+     *
+     * <p>前端据此决定显示哪些按钮，不再自己硬编码"状态==3 就显示开始代驾"。</p>
+     *
+     * @param orderId 订单id
+     * @return 可用事件列表
+     */
+    @Operation(summary = "查询订单当前可执行的操作")
+    @GetMapping("/availableEvents/{orderId}")
+    public List<OrderEventEnum> availableEvents(@PathVariable Long orderId) {
+        return orderInfoService.availableEvents(orderId);
     }
 
 }

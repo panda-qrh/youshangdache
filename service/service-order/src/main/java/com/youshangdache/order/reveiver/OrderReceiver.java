@@ -32,7 +32,7 @@ public class OrderReceiver {
      * @throws IOException
      */
     @RabbitListener(bindings = @QueueBinding(
-            exchange = @Exchange(value = ExchangeConst.CANCEL_ORDER, type = "x-delayed-message", arguments = @Argument(name = "x-delayed-type", value="direct"),durable = "true", autoDelete = "false"),
+            exchange = @Exchange(value = ExchangeConst.CANCEL_ORDER, type = "x-delayed-message", arguments = @Argument(name = "x-delayed-type", value = "direct")),
             value = @Queue(value = QueueConst.CANCEL_ORDER, durable = "true"),
             key = {RoutingConst.CANCEL_ORDER}
     ))

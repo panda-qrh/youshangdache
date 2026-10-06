@@ -126,6 +126,17 @@ public interface OrderService {
     Boolean sendOrderBillInfo(Long orderId, Long driverId);
 
     /**
+     * 司机撤单
+     *
+     * <p>已接单 / 司机已到达 两种状态可以撤单，开始代驾之后不允许。</p>
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    Boolean cancelOrder(Long orderId, Long driverId);
+
+    /**
      * 司机抢单
      *
      * <p>

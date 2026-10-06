@@ -4,19 +4,20 @@ import com.youshangdache.model.form.rules.FeeRuleRequest;
 import com.youshangdache.model.form.rules.FeeRuleRequestForm;
 import com.youshangdache.model.vo.rules.FeeRuleResponse;
 import com.youshangdache.model.vo.rules.FeeRuleResponseVo;
+import com.youshangdache.rules.enums.RuleType;
 import com.youshangdache.rules.service.FeeRuleService;
 import com.youshangdache.rules.utils.DroolsUtils;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class FeeRuleServiceImpl implements FeeRuleService {
 
-    @Autowired
+    @Resource
     private DroolsUtils droolsUtils;
 
     @Override
@@ -27,7 +28,7 @@ public class FeeRuleServiceImpl implements FeeRuleService {
                 .waitMinute(feeRuleRequestForm.getWaitMinute())
                 .build();
 
-        FeeRuleResponse feeRuleResponse = droolsUtils.execute(feeRuleRequest, "feeRuleResponse", FeeRuleResponse.class);
+        FeeRuleResponse feeRuleResponse = droolsUtils.execute(feeRuleRequest, RuleType.FEE, FeeRuleResponse.class);
 
         FeeRuleResponseVo feeRuleResponseVo = new FeeRuleResponseVo();
         BeanUtils.copyProperties(feeRuleResponse, feeRuleResponseVo);

@@ -83,7 +83,7 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         if (couponInfo.getCouponType() == CouponTypeEnum.DISCOUNT) {
             BigDecimal discountOrderAmount = useCouponForm.getOrderAmount()
                     .multiply(couponInfo.getDiscount())
-                    .divide(new BigDecimal("10"),2, RoundingMode.HALF_UP);
+                    .divide(new BigDecimal("10"), 2, RoundingMode.HALF_UP);
             if (couponInfo.getConditionAmount().doubleValue() == 0) {
                 reduceAmount = useCouponForm.getOrderAmount().subtract(discountOrderAmount);
             }
@@ -133,12 +133,12 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
             BigDecimal reduceAmount = noUseCouponVo.getAmount();
             //没有门槛
             if (noUseCouponVo.getConditionAmount().intValue() == CouponUsageThresholdEnum.NO_THRESHOLD.getCode() &&
-                    orderAmount.subtract(reduceAmount).doubleValue() > 0) {
+                    orderAmount.compareTo(reduceAmount) > 0) {
                 availableCouponVoList.add(this.buildBestNoUseCouponVo(noUseCouponVo, reduceAmount));
             }
             //有门槛
             if (noUseCouponVo.getConditionAmount().intValue() > CouponUsageThresholdEnum.NO_THRESHOLD.getCode() &&
-                    orderAmount.subtract(noUseCouponVo.getConditionAmount()).doubleValue() > 0) {
+                    orderAmount.compareTo(noUseCouponVo.getConditionAmount()) > 0) {
                 availableCouponVoList.add(this.buildBestNoUseCouponVo(noUseCouponVo, reduceAmount));
             }
         }
@@ -212,7 +212,9 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
                 //4、校验每人限领数量
                 if (couponInfo.getPerLimit() > 0) {
                     //4.1、统计当前用户对当前优惠券的已经领取的数量
-                    long count = customerCouponMapper.selectCount(new LambdaQueryWrapper<CustomerCoupon>().eq(CustomerCoupon::getCouponId, couponId).eq(CustomerCoupon::getCustomerId, customerId));
+                    long count = customerCouponMapper.selectCount(new LambdaQueryWrapper<CustomerCoupon>()
+                            .eq(CustomerCoupon::getCouponId, couponId)
+                            .eq(CustomerCoupon::getCustomerId, customerId));
                     //4.2、校验限领数量
                     if (count >= couponInfo.getPerLimit()) {
                         throw new GuiguException(ResultCodeEnum.COUPON_USER_LIMIT);

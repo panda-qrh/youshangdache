@@ -2,6 +2,7 @@ package com.youshangdache.order;
 
 
 import com.youshangdache.model.entity.order.OrderInfo;
+import com.youshangdache.model.enums.OrderEventEnum;
 import com.youshangdache.model.enums.OrderStatusEnum;
 import com.youshangdache.model.form.order.OrderInfoForm;
 import com.youshangdache.model.form.order.StartDriveForm;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 @FeignClient(value = "service-order", path = "/order/info")
@@ -218,5 +221,43 @@ public interface OrderInfoFeignClient {
     @GetMapping("/updateCouponAmount/{orderId}/{couponAmount}")
     Boolean updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount);
 
+    /**
+     * 乘客取消订单
+     *
+     * @param orderId    订单id
+     * @param customerId 乘客id
+     * @return true
+     */
+    @PostMapping("/cancelOrderByCustomer/{orderId}/{customerId}")
+    Boolean cancelOrderByCustomer(@PathVariable("orderId") Long orderId, @PathVariable("customerId") Long customerId);
+
+    /**
+     * 司机撤单
+     *
+     * @param orderId  订单id
+     * @param driverId 司机id
+     * @return true
+     */
+    @PostMapping("/cancelOrderByDriver/{orderId}/{driverId}")
+    Boolean cancelOrderByDriver(@PathVariable("orderId") Long orderId, @PathVariable("driverId") Long driverId);
+
+    /**
+     * 事故关闭订单（后台）
+     *
+     * @param orderId 订单id
+     * @param remark  关闭原因
+     * @return true
+     */
+    @PostMapping("/closeOrderByCaseAccident/{orderId}")
+    Boolean closeOrderByCaseAccident(@PathVariable("orderId") Long orderId, @RequestParam(value = "remark", required = false) String remark);
+
+    /**
+     * 查询当前订单状态下可执行的操作
+     *
+     * @param orderId 订单id
+     * @return 可用事件列表
+     */
+    @GetMapping("/availableEvents/{orderId}")
+    List<OrderEventEnum> availableEvents(@PathVariable("orderId") Long orderId);
 
 }

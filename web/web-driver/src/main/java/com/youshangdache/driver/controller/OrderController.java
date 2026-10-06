@@ -224,5 +224,20 @@ public class OrderController {
         return Result.ok(orderService.sendOrderBillInfo(orderId, AuthContextHolder.getUserId()));
     }
 
+    /**
+     * 司机撤单
+     *
+     * <p>已接单 / 司机已到达 两种状态可以撤单，开始代驾之后不允许。</p>
+     *
+     * @param orderId 订单id
+     * @return true
+     */
+    @Operation(summary = "司机撤单")
+    @Login
+    @PostMapping("/cancelOrder/{orderId}")
+    public Result<Boolean> cancelOrder(@PathVariable Long orderId) {
+        return Result.ok(orderService.cancelOrder(orderId, AuthContextHolder.getUserId()));
+    }
+
 }
 

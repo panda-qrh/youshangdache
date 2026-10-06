@@ -34,13 +34,13 @@ public class MapServiceImpl implements MapService {
      * @return
      */
     @Override
-    public DrivingLineVo calculateDrivingLine(CalculateDrivingLineForm calculateDrivingLineForm) {
+    public DrivingLineVo calculateDrivingLine(CalculateDrivingLineForm drivingLine) {
         //请求腾讯提供的接口，最返回需要的结果
         String url = "https://apis.map.qq.com/ws/direction/v1/driving/?from={from}&to={to}&key={key}";
         //封装传递的参数
         Map<String, String> map = Map.of(
-                "from", calculateDrivingLineForm.getStartPointLatitude() + "," + calculateDrivingLineForm.getStartPointLongitude(),
-                "to", calculateDrivingLineForm.getEndPointLatitude() + "," + calculateDrivingLineForm.getEndPointLongitude(),
+                "from", drivingLine.getStartPointLatitude() + "," + drivingLine.getStartPointLongitude(),
+                "to", drivingLine.getEndPointLatitude() + "," + drivingLine.getEndPointLongitude(),
                 "key", key
         );
         //使用restTemplate调用

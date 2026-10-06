@@ -44,6 +44,9 @@
         <seata.version>1.7.1</seata.version>
         <lombok.version>1.18.36</lombok.version>
         <drools.version>8.41.0.Final</drools.version>
+        <!-- Spring StateMachine：4.0.0 基于 Spring Framework 6.0.x，与 Spring Boot 3.0.5 匹配；
+             4.0.2 起要求 Framework 6.2（Boot 3.4+），不要随手升级 -->
+        <spring-statemachine.version>4.0.0</spring-statemachine.version>
     </properties>
 
     <dependencyManagement>
@@ -185,6 +188,19 @@
                 <groupId>org.drools</groupId>
                 <artifactId>drools-mvel</artifactId>
                 <version>${drools.version}</version>
+            </dependency>
+
+            <!-- Spring StateMachine：订单状态机 -->
+            <dependency>
+                <groupId>org.springframework.statemachine</groupId>
+                <artifactId>spring-statemachine-starter</artifactId>
+                <version>${spring-statemachine.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.statemachine</groupId>
+                <artifactId>spring-statemachine-test</artifactId>
+                <version>${spring-statemachine.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

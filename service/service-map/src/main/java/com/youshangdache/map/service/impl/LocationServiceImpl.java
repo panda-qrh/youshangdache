@@ -221,13 +221,13 @@ public class LocationServiceImpl implements LocationService {
                 continue;
             }
             if (driverSet.getAcceptDistance() != null
-                    && !driverSet.getAcceptDistance().equals(BigDecimal.ZERO)
+                    && !driverSet.getAcceptDistance().equals(OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION)
                     && driverSet.getAcceptDistance().compareTo(currentDistance) < 0) {
                 //超出司机设置的最大接单距离
                 continue;
             }
             if (driverSet.getOrderDistance() != null
-                    && driverSet.getOrderDistance().doubleValue() != OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION
+                    && !driverSet.getOrderDistance().equals(OrderDistanceConstant.ORDER_DISTANCE_NO_LIMITATION)
                     && driverSet.getOrderDistance().compareTo(searchNearByDriverForm.getMileageDistance()) < 0) {
                 //订单里程超出司机设置的最大接单里程
                 continue;
